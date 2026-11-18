@@ -1,5 +1,7 @@
 # Installing Stack Monitoring
 
+For the complete first-time walkthrough—including package and Docker installation, user/role setup, service secrets, and startup checks—follow [Install in the README](../README.md#install). This page provides additional storage, TLS, and recovery details.
+
 The supported scope is one attached OpenSearch cluster and one collecting OpenSearch Dashboards **3.9.0** instance. Other Dashboards instances may serve the UI with collection disabled. This is not an HA collector, a remote-cluster service, or a substitute for independent outage monitoring. Capacity, failure recovery, and your security configuration require validation in your environment.
 
 ## Install a release
