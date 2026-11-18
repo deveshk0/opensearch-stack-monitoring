@@ -1,0 +1,319 @@
+{
+  "policy": {
+    "policy": {
+      "description": "Roll monitoring history at one day or 20 GiB; retain 7 days after rollover.",
+      "default_state": "collecting",
+      "states": [
+        {
+          "name": "collecting",
+          "actions": [
+            {
+              "rollover": {
+                "min_index_age": "1d",
+                "min_primary_shard_size": "20gb"
+              }
+            }
+          ],
+          "transitions": [
+            {
+              "state_name": "delete",
+              "conditions": {
+                "min_rollover_age": "7d"
+              }
+            }
+          ]
+        },
+        {
+          "name": "delete",
+          "actions": [
+            {
+              "delete": {}
+            }
+          ],
+          "transitions": []
+        }
+      ],
+      "ism_template": [
+        {
+          "index_patterns": ["stack-monitoring-v2-*"],
+          "priority": 200
+        }
+      ]
+    }
+  },
+  "metrics_template": {
+    "index_patterns": ["stack-monitoring-v2-*"],
+    "priority": 200,
+    "template": {
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1,
+        "plugins.index_state_management.rollover_alias": "stack-monitoring-write"
+      },
+      "mappings": {
+        "dynamic": false,
+        "properties": {
+          "timestamp": {
+            "type": "date"
+          },
+          "cluster_uuid": {
+            "type": "keyword"
+          },
+          "type": {
+            "type": "keyword"
+          },
+          "entity_id": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "keyword"
+          },
+          "status": {
+            "type": "keyword"
+          },
+          "metrics": {
+            "type": "object",
+            "enabled": false
+          },
+          "counters": {
+            "type": "object",
+            "enabled": false
+          },
+          "payload": {
+            "type": "object",
+            "enabled": false
+          }
+        }
+      }
+    }
+  },
+  "insights_template": {
+    "index_patterns": ["stack-monitoring-insights-v1"],
+    "priority": 200,
+    "template": {
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1
+      },
+      "mappings": {
+        "dynamic": false,
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "cluster_uuid": {
+            "type": "keyword"
+          },
+          "rule_id": {
+            "type": "keyword"
+          },
+          "entity_id": {
+            "type": "keyword"
+          },
+          "entity_name": {
+            "type": "keyword"
+          },
+          "entity_type": {
+            "type": "keyword"
+          },
+          "severity": {
+            "type": "keyword"
+          },
+          "status": {
+            "type": "keyword"
+          },
+          "first_seen": {
+            "type": "date"
+          },
+          "detected_at": {
+            "type": "date"
+          },
+          "last_seen": {
+            "type": "date"
+          },
+          "last_evaluated": {
+            "type": "date"
+          },
+          "resolved_at": {
+            "type": "date"
+          },
+          "value": {
+            "type": "double"
+          },
+          "evidence": {
+            "type": "object",
+            "enabled": false
+          }
+        }
+      }
+    }
+  },
+  "indices": {
+    "stack-monitoring-insights-v1": {
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1
+      },
+      "mappings": {
+        "dynamic": false,
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "cluster_uuid": {
+            "type": "keyword"
+          },
+          "rule_id": {
+            "type": "keyword"
+          },
+          "entity_id": {
+            "type": "keyword"
+          },
+          "entity_name": {
+            "type": "keyword"
+          },
+          "entity_type": {
+            "type": "keyword"
+          },
+          "severity": {
+            "type": "keyword"
+          },
+          "status": {
+            "type": "keyword"
+          },
+          "first_seen": {
+            "type": "date"
+          },
+          "detected_at": {
+            "type": "date"
+          },
+          "last_seen": {
+            "type": "date"
+          },
+          "last_evaluated": {
+            "type": "date"
+          },
+          "resolved_at": {
+            "type": "date"
+          },
+          "value": {
+            "type": "double"
+          },
+          "evidence": {
+            "type": "object",
+            "enabled": false
+          }
+        }
+      }
+    },
+    ".stack-monitoring-settings": {
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1
+      },
+      "mappings": {
+        "dynamic": "strict",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    ".stack-monitoring-locks-v1": {
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1
+      },
+      "mappings": {
+        "dynamic": "strict",
+        "properties": {
+          "owner": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  },
+  "roles": {
+    "stack_monitoring_collector": {
+      "cluster_permissions": [
+        "cluster_monitor",
+        "cluster:admin/ingest/pipeline/get",
+        "indices:data/write/bulk",
+        "indices:data/read/scroll",
+        "indices:data/read/scroll/clear"
+      ],
+      "index_permissions": [
+        {
+          "index_patterns": ["*"],
+          "allowed_actions": ["indices:monitor/*"]
+        },
+        {
+          "index_patterns": [".stack-monitoring-settings"],
+          "allowed_actions": ["indices:data/read/get"]
+        },
+        {
+          "index_patterns": [".stack-monitoring-locks-v1"],
+          "allowed_actions": [
+            "indices:data/read/get",
+            "indices:data/write/index",
+            "indices:data/write/delete",
+            "indices:data/write/bulk*"
+          ]
+        },
+        {
+          "index_patterns": ["stack-monitoring-insights-v1"],
+          "allowed_actions": [
+            "read",
+            "indices:data/write/bulk*",
+            "indices:data/write/index*",
+            "indices:data/write/delete/byquery",
+            "indices:data/write/delete"
+          ]
+        },
+        {
+          "index_patterns": ["stack-monitoring-write", "stack-monitoring-v2-*"],
+          "allowed_actions": [
+            "indices:data/write/bulk*",
+            "indices:data/write/index*"
+          ]
+        }
+      ]
+    },
+    "stack_monitoring_reader": {
+      "cluster_permissions": ["cluster_monitor", "cluster_composite_ops_ro"],
+      "index_permissions": [
+        {
+          "index_patterns": [
+            "stack-monitoring-v1-*",
+            "stack-monitoring-v2-*",
+            "stack-monitoring-insights-v1"
+          ],
+          "allowed_actions": ["read"]
+        },
+        {
+          "index_patterns": [".stack-monitoring-settings"],
+          "allowed_actions": ["indices:data/read/get"]
+        }
+      ],
+      "tenant_permissions": [
+        {
+          "tenant_patterns": ["global_tenant"],
+          "allowed_actions": ["kibana_all_read"]
+        }
+      ]
+    },
+    "stack_monitoring_manager": {
+      "index_permissions": [
+        {
+          "index_patterns": [".stack-monitoring-settings"],
+          "allowed_actions": [
+            "indices:data/write/index",
+            "indices:data/write/bulk*"
+          ]
+        }
+      ]
+    }
+  }
+}

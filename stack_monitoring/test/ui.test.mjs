@@ -5,10 +5,9 @@ import path from "node:path";
 import vm from "node:vm";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
-const dependencies = path.resolve(".cache/OpenSearch-Dashboards/node_modules");
-const ts = require(dependencies + "/typescript");
-const React = require(dependencies + "/react");
-const renderer = require(dependencies + "/react-test-renderer");
+const ts = require("typescript");
+const React = require("react");
+const renderer = require("react-test-renderer");
 const { act } = renderer;
 
 // Execute the shipped components with real React effects and controllable HTTP.
@@ -560,5 +559,262 @@ test("saving collection invalidates history requested before the change", async 
     );
   } finally {
     await env.close();
+  }
+});
+
+const setupState = (overrides = {}) => ({
+  configured: false,
+  managed: false,
+  available: true,
+  reason: null,
+  last_success: null,
+  last_error: null,
+  ...overrides,
+});
+
+test("first-run setup remains available without indices and refreshes after one setup request", async () => {
+  const env = environment();
+  try {
+    await env.app();
+    await act(async () => {
+      endpoint(env, "collection")[0].reject({ statusCode: 404 });
+      endpoint(env, "history")[0].reject({ statusCode: 404 });
+    });
+    assert.equal(endpoint(env, "setup").length, 1);
+    await act(async () => endpoint(env, "setup")[0].resolve(setupState()));
+    const popover = env.tree.root.findByType("EuiPopover");
+    assert.equal(text(popover.props.button), "Set up monitoring");
+    await act(async () => popover.props.button.props.onClick());
+    assert.equal(env.tree.root.findByType("EuiPopover").props.isOpen, true);
+    const button = env.tree.root
+      .findByType("EuiPopover")
+      .findByType("EuiButton");
+    assert.equal(text(button), "Set up monitoring");
+    let save;
+    await act(async () => {
+      save = button.props.onClick();
+      button.props.onClick();
+    });
+    assert.equal(endpoint(env, "setup", "POST").length, 1);
+    assert.equal(
+      env.tree.root.findByType("EuiPopover").findByType("EuiButton").props
+        .isLoading,
+      true,
+    );
+    assert.equal(
+      env.tree.root.findByType("EuiPopover").findByType("EuiButton").props
+        .isDisabled,
+      true,
+    );
+    assert.equal(endpoint(env, "setup", "POST")[0].options.body, "{}");
+    await act(async () => {
+      endpoint(env, "setup", "POST")[0].resolve(
+        setupState({ configured: true, managed: true }),
+      );
+      await save;
+    });
+    assert.equal(endpoint(env, "history").length, 2);
+    assert(
+      env.tree.root
+        .findAllByType("EuiHealth")
+        .some((n) => /waiting.*sample/i.test(text(n))),
+    );
+    await act(async () =>
+      endpoint(env, "collection").at(-1).resolve({
+        configured: true,
+        enabled: true,
+        desired_enabled: true,
+        index_pattern: "history-*",
+        interval_ms: 10000,
+        last_success: null,
+        last_error: null,
+      }),
+    );
+    assert(
+      env.tree.root
+        .findAllByType("EuiHealth")
+        .some((n) => /waiting.*sample/i.test(text(n))),
+    );
+    await env.refresh();
+    await act(async () =>
+      endpoint(env, "collection").at(-1).resolve({
+        configured: true,
+        enabled: true,
+        desired_enabled: true,
+        index_pattern: "history-*",
+        interval_ms: 10000,
+        last_success: 1770000000000,
+        last_error: null,
+      }),
+    );
+    assert.equal(
+      text(env.tree.root.findByType("EuiPopover").findByType("EuiButton")),
+      "Disable self-monitoring",
+    );
+    assert(
+      !env.tree.root
+        .findAllByType("EuiHealth")
+        .some((n) => /waiting.*sample/i.test(text(n))),
+    );
+  } finally {
+    await env.close();
+  }
+});
+
+test("readers see why first-run setup is unavailable", async () => {
+  const env = environment();
+  try {
+    await env.component("collection");
+    await act(async () =>
+      endpoint(env, "collection")[0].reject({ statusCode: 404 }),
+    );
+    assert.equal(endpoint(env, "setup").length, 1);
+    await act(async () =>
+      endpoint(env, "setup")[0].resolve(
+        setupState({
+          available: false,
+          reason: "Sign in as an administrator to set up monitoring.",
+        }),
+      ),
+    );
+    assert(
+      env.tree.root
+        .findAllByType("EuiCallOut")
+        .some((n) => text(n).includes("Sign in as an administrator")),
+    );
+    assert.equal(env.tree.root.findAllByType("EuiButton").length, 0);
+    assert.equal(endpoint(env, "setup", "POST").length, 0);
+  } finally {
+    await env.close();
+  }
+});
+
+test("unconfigured collectors offer setup and failed setup can retry without exposing errors", async () => {
+  const env = environment();
+  try {
+    await env.component("collection");
+    const unconfigured = {
+      configured: false,
+      enabled: false,
+      desired_enabled: false,
+      interval_ms: 10000,
+      index_pattern: "history-*",
+      last_success: null,
+      last_error: null,
+    };
+    await act(async () => endpoint(env, "collection")[0].resolve(unconfigured));
+    assert.equal(endpoint(env, "setup").length, 1);
+    await act(async () => endpoint(env, "setup")[0].resolve(setupState()));
+    let save;
+    await act(async () => {
+      save = env.tree.root.findByType("EuiButton").props.onClick();
+    });
+    await act(async () => {
+      endpoint(env, "setup", "POST")[0].reject({
+        body: { message: "secret-internal-detail" },
+      });
+      await save;
+    });
+    await act(async () =>
+      endpoint(env, "collection").at(-1).resolve(unconfigured),
+    );
+    await act(async () => endpoint(env, "setup").at(-1).resolve(setupState()));
+    const errors = env.tree.root.findAllByType("EuiCallOut");
+    assert(errors.some((n) => /could not|failed/i.test(n.props.title)));
+    assert(
+      !errors.some((n) =>
+        (n.props.title + text(n)).includes("secret-internal-detail"),
+      ),
+    );
+    assert.equal(env.tree.root.findByType("EuiButton").props.isDisabled, false);
+    await act(async () => {
+      env.tree.root.findByType("EuiButton").props.onClick();
+    });
+    assert.equal(endpoint(env, "setup", "POST").length, 2);
+  } finally {
+    await env.close();
+  }
+});
+
+test("a failed setup status read can be retried from the popover", async () => {
+  const env = environment();
+  try {
+    await env.component("collection");
+    await act(async () =>
+      endpoint(env, "collection")[0].reject({ statusCode: 404 }),
+    );
+    assert.equal(endpoint(env, "setup").length, 1);
+    await act(async () =>
+      endpoint(env, "setup")[0].reject({ statusCode: 503 }),
+    );
+    const retry = env.tree.root.findByType("EuiButton");
+    assert.match(text(retry), /retry/i);
+    await act(async () => retry.props.onClick());
+    await act(async () =>
+      endpoint(env, "collection").at(-1).reject({ statusCode: 404 }),
+    );
+    await act(async () => endpoint(env, "setup").at(-1).resolve(setupState()));
+    assert.equal(
+      text(env.tree.root.findByType("EuiButton")),
+      "Set up monitoring",
+    );
+  } finally {
+    await env.close();
+  }
+});
+
+test("setup displays public conflict reasons and hides unexpected server errors", async () => {
+  const publicMessage =
+    "Another Dashboards instance owns monitoring collection.";
+  const genericMessage =
+    "Monitoring setup could not be completed. Please retry.";
+  for (const [failure, expected] of [
+    [
+      { response: { status: 409 }, body: { message: publicMessage } },
+      publicMessage,
+    ],
+    [{ body: { statusCode: 409, message: publicMessage } }, publicMessage],
+    [
+      {
+        response: { status: 503 },
+        body: { statusCode: 503, message: "secret-internal-detail" },
+      },
+      genericMessage,
+    ],
+    [{ body: { message: "secret-internal-detail" } }, genericMessage],
+    [
+      {
+        response: { status: 409 },
+        body: { message: { detail: "secret-internal-detail" } },
+      },
+      genericMessage,
+    ],
+  ]) {
+    const env = environment();
+    try {
+      await env.component("collection");
+      await act(async () =>
+        endpoint(env, "collection")[0].reject({ statusCode: 404 }),
+      );
+      await act(async () => endpoint(env, "setup")[0].resolve(setupState()));
+      let save;
+      await act(async () => {
+        save = env.tree.root.findByType("EuiButton").props.onClick();
+      });
+      await act(async () => {
+        endpoint(env, "setup", "POST")[0].reject(failure);
+        await save;
+      });
+      assert.equal(
+        env.tree.root.findByType("EuiCallOut").props.title,
+        expected,
+      );
+      assert.equal(
+        env.tree.root.findByType("EuiButton").props.isDisabled,
+        false,
+      );
+    } finally {
+      await env.close();
+    }
   }
 });

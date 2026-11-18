@@ -15,9 +15,15 @@ concurrency:
 
 jobs:
   linux:
+    name: Dashboards ${{ matrix.osd }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        osd: ["3.7.0", "3.8.0", "3.9.0", "3.10.0"]
     env:
+      OSD_VERSION: ${{ matrix.osd }}
       YARN_CACHE_FOLDER: ${{ github.workspace }}/.cache/yarn
       COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
       CYPRESS_INSTALL_BINARY: "0"
@@ -26,17 +32,21 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+      - name: Select pinned host toolchain
+        run: |
+          source scripts/host-version.sh
+          printf '%s\n' "NODE_VERSION=$NODE_VERSION" "NODE_BIN=$NODE_BIN" "OSD_COMMIT=$OSD_COMMIT" "OSD_HOST=$OSD_HOST" >> "$GITHUB_ENV"
       - name: Cache pinned toolchain and dependency downloads
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: |
-            .cache/node-v22.23.0-linux-x64
+            .cache/node-v${{ env.NODE_VERSION }}-linux-x64
             .cache/yarn
-          key: ubuntu24-x64-osd-def668b5c4ad825dfff980ed0951cca07aa0ac4b-node22.23.0-${{ hashFiles('scripts/bootstrap.sh') }}
-      - name: Bootstrap exact OpenSearch Dashboards 3.9.0
+          key: ubuntu24-x64-osd-${{ matrix.osd }}-${{ env.OSD_COMMIT }}-node${{ env.NODE_VERSION }}-${{ hashFiles('scripts/bootstrap.sh', 'scripts/host-version.sh') }}
+      - name: Bootstrap exact OpenSearch Dashboards host
         run: |
           bash scripts/bootstrap.sh
-          echo "$GITHUB_WORKSPACE/.cache/node-v22.23.0-linux-x64/bin" >> "$GITHUB_PATH"
+          echo "$NODE_BIN" >> "$GITHUB_PATH"
       - name: Unit and isolated UI tests
         run: npm test
       - name: Synthetic processing profile
@@ -46,12 +56,19 @@ jobs:
       - name: Build official plugin archive
         run: bash scripts/build-plugin.sh
       - name: Type-check against the official host
-        run: node .cache/OpenSearch-Dashboards/node_modules/typescript/bin/tsc --project .cache/OpenSearch-Dashboards/plugins/stack_monitoring/tsconfig.json --noEmit
+        run: node "$OSD_HOST/node_modules/typescript/bin/tsc" --project "$OSD_HOST/plugins/stack_monitoring/tsconfig.json" --noEmit
+      - name: Install pinned browser test driver
+        run: npm install --prefix .cache/browser-tests --no-save playwright@1.65.0
+      - name: Fresh-cluster setup, restart, permissions, and browser checks
+        env:
+          PLAYWRIGHT_MODULE: ${{ github.workspace }}/.cache/browser-tests/node_modules/playwright
+          PLAYWRIGHT_CHANNEL: chrome
+        run: python3 scripts/check-compatibility.py
       - name: Upload checked archive
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: stack-monitoring-dashboards-3.9.0-linux
-          path: artifacts/stack-monitoring.zip
+          name: stack-monitoring-${{ matrix.osd }}
+          path: artifacts/stack-monitoring*.zip
           if-no-files-found: error
           retention-days: 7
 
@@ -73,7 +90,8 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: stack-monitoring-dashboards-3.9.0-linux
+          pattern: stack-monitoring-*
+          merge-multiple: true
           path: artifacts
       - name: Publish checked archive and checksum
         env:

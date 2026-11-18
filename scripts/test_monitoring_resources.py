@@ -1,5 +1,7 @@
 """Offline checks for production monitoring provisioning."""
 import copy
+import json
+from pathlib import Path
 import unittest
 
 from monitoring_resources import ApiError, resources, provision
@@ -72,6 +74,10 @@ class Cluster:
 
 
 class ResourceTests(unittest.TestCase):
+    def test_native_setup_defaults_match_python_resources(self):
+        path = Path(__file__).resolve().parents[1] / 'stack_monitoring/common/setup_resources.json'
+        self.assertEqual(json.loads(path.read_text()), resources())
+
     def test_rollover_retains_seven_days_after_rollover(self):
         policy = resources()['policy']['policy']
         states = policy['states']

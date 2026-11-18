@@ -1,10 +1,15 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const { spawnSync } = require("node:child_process");
-const ts = require("../.cache/OpenSearch-Dashboards/node_modules/typescript");
+const { execFileSync, spawnSync } = require("node:child_process");
+const host = execFileSync("bash", [path.join(__dirname, "host-version.sh")], { encoding: "utf8" }).trim();
+const dependencies = path.join(host, "node_modules");
+const ts = require(path.join(dependencies, "typescript"));
 for (const folder of ["common", "server"]) {
   const output = path.join(".cache/test-build", folder);
   fs.mkdirSync(output, { recursive: true });
+  for (const name of fs.readdirSync(`stack_monitoring/${folder}`).filter(n => n.endsWith(".json"))) {
+    fs.copyFileSync(`stack_monitoring/${folder}/${name}`, path.join(output, name));
+  }
   for (const name of fs
     .readdirSync(`stack_monitoring/${folder}`)
     .filter((n) => n.endsWith(".ts"))) {
@@ -16,6 +21,7 @@ for (const folder of ["common", "server"]) {
       compilerOptions: {
         module: ts.ModuleKind.CommonJS,
         target: ts.ScriptTarget.ES2020,
+        esModuleInterop: true,
       },
       fileName: name,
     });
@@ -33,7 +39,7 @@ const result = spawnSync(process.execPath, ["--test", ...files], {
   stdio: "inherit",
   env: {
     ...process.env,
-    NODE_PATH: path.resolve(".cache/OpenSearch-Dashboards/node_modules"),
+    NODE_PATH: dependencies,
   },
 });
 process.exitCode = result.status ?? 1;

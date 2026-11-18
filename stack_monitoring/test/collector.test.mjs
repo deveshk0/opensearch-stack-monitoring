@@ -194,3 +194,24 @@ test("disabling while settings are in flight cannot be overwritten by stale sett
   assert.equal(c.state.enabled, false);
   assert.equal(writes, 0);
 });
+
+test("starting after an explicit verification sample waits for the normal interval", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  let reads = 0;
+  const c = new Collector(
+    async () => {
+      reads++;
+      return raw();
+    },
+    async () => {},
+  );
+  await c.runOnce();
+  c.start(false);
+  assert.equal(reads, 1);
+  t.mock.timers.tick(9999);
+  assert.equal(reads, 1);
+  t.mock.timers.tick(1);
+  await c.pending;
+  assert.equal(reads, 2);
+  await c.stop();
+});

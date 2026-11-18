@@ -1,43 +1,77 @@
 # Installing Stack Monitoring
 
-For the complete first-time walkthrough—including package and Docker installation, user/role setup, service secrets, and startup checks—follow [Install in the README](../README.md#install). This page provides additional storage, TLS, and recovery details.
+For package, tarball, and Docker commands, follow [Install in the README](../README.md#install). The recommended flow is: install the matching plugin ZIP, restart Dashboards, sign in as a Security administrator, and click **Set up monitoring**. This page covers compatibility, credential storage, manual alternatives, and recovery.
 
-The supported scope is one attached OpenSearch cluster and one collecting OpenSearch Dashboards **3.9.0** instance. Other Dashboards instances may serve the UI with collection disabled. This is not an HA collector, a remote-cluster service, or a substitute for independent outage monitoring. Capacity, failure recovery, and your security configuration require validation in your environment.
+The supported topology is one attached OpenSearch cluster and one collecting Dashboards instance. Other Dashboards instances may serve the UI with collection disabled. Collector ownership is not automatic failover. Validate capacity, recovery, and access controls in your deployment.
+
+## Compatibility
+
+A plugin release number (for example, `v1.1.0`) is separate from its Dashboards host target. Each ZIP targets one **exact** host version; a 3.9.0 ZIP cannot be used as a general 3.x package.
+
+| Exact Dashboards build target | Release asset | New setup runtime validation |
+| --- | --- | --- |
+| 3.7.0 | `stack-monitoring-3.7.0.zip` | Pending in this development draft |
+| 3.8.0 | `stack-monitoring-3.8.0.zip` | Pending in this development draft |
+| 3.9.0 | `stack-monitoring-3.9.0.zip` | Pending in this development draft |
+| 3.10.0 | `stack-monitoring-3.10.0.zip` | Pending in this development draft |
+
+These are the configured build targets, not a claim that all runtime checks have completed. Consult the selected release's validation notes before deployment. Other host versions are not covered. The generic `stack-monitoring.zip` is an alias of the **3.9.0** archive only.
 
 ## Install a release
 
-Download `stack-monitoring.zip` and `SHA256SUMS` from a [GitHub release](https://github.com/deveshk0/opensearch-stack-monitoring/releases). Use a specific tag for repeatable deployments, and verify before installation:
+Download the matching ZIP and `SHA256SUMS` from an available [GitHub release](https://github.com/deveshk0/opensearch-stack-monitoring/releases). The [README commands](../README.md#1-download-and-verify) use `release_tag=v1.1.0` as the new feature release example; select a published tag. Verify only the selected ZIP, because the checksum manifest contains all host builds:
 
 ```sh
-shasum -a 256 -c SHA256SUMS
+plugin_asset=stack-monitoring-3.9.0.zip # Match the exact Dashboards version.
+awk -v name="$plugin_asset" '$2 == name { print; found++ } END { if (found != 1) exit 1 }' \
+  SHA256SUMS > selected-SHA256SUMS &&
+  shasum -a 256 -c selected-SHA256SUMS
 ```
 
-The published ZIP is built and checked on Linux for **OpenSearch Dashboards 3.9.0**. A plugin version such as `1.1.0` does not change that host requirement. Download the source archive for the same release (or check out its tag) to obtain the matching `scripts/provision-monitoring.py` and supporting files.
+Run this from the download directory and continue only when the selected ZIP reports `OK`. `sha256sum -c selected-SHA256SUMS` is the Linux alternative. A matching source checkout supplies the optional manual provisioner and Dockerfile; no source build is required for a release install.
 
-Continue with the installer below, then provision storage/roles and configure the collecting host before restarting Dashboards.
+Stop Dashboards, preserve its configuration and data directory, and use its plugin installer as the installation owner:
+
+```sh
+bin/opensearch-dashboards-plugin install file:///absolute/path/stack-monitoring-3.9.0.zip
+```
+
+Use the filename for your host. Package installations and Docker images have different service-management steps; see the [README](../README.md#2-install-and-restart-dashboards). Docker builds require copying the verified versioned archive to `artifacts/stack-monitoring.zip` and selecting the same `OPENSEARCH_VERSION` build argument. Restart Dashboards before opening setup.
+
+For upgrades, remove the old `stackMonitoring` plugin with the host plugin manager before installing the replacement. Preserve the persistent data directory and review release-specific migrations. Removing plugin code does not delete monitoring indices or the stored collector secret. The supplied Docker image derives asset URLs from the ZIP hash; other packaging must likewise ensure browsers fetch upgraded assets.
 
 ### Build from source (optional)
 
-Use Node 22.23.0 and the exact host checkout selected by `scripts/bootstrap.sh`:
+Select the exact supported host for both bootstrap and build. Bootstrap selects the host's pinned Node version and official source checkout:
 
 ```sh
+export OSD_VERSION=3.9.0 # Choose 3.7.0, 3.8.0, 3.9.0, or 3.10.0.
 bash scripts/bootstrap.sh
 bash scripts/build-plugin.sh
 ```
 
-The source build produces `artifacts/stack-monitoring.zip`. For either a release download or source build, stop the target Dashboards process, retain its configuration and data directory, and use its plugin installer:
+The output is `artifacts/stack-monitoring-$OSD_VERSION.zip`. The 3.9.0 build also writes the generic `artifacts/stack-monitoring.zip`; copy other selected builds to that filename before using the repository Dockerfile. A successful build alone does not verify live collection on a deployment.
 
-```sh
-bin/opensearch-dashboards-plugin install file:///absolute/path/stack-monitoring.zip
-```
+## Automatic setup
 
-For an upgrade, remove the existing `stackMonitoring` plugin with the host's plugin manager before installing the replacement. Removing plugin code does not intentionally delete monitoring indices. Retain backups and check storage compatibility before upgrading. The manifest pins 3.9.0; a different host version needs a separate rebuild and verification.
+1. Sign in with a Security administrator account authorized to manage monitoring indices, templates, ISM policies, Security roles, and internal users.
+2. Choose the **Global** tenant and open **Stack Monitoring**.
+3. Open **Set up monitoring** beside the date picker (or **Self-monitoring**) and click **Set up monitoring**.
+4. Wait for an advancing last-success time. Setup completion precedes the first sample; rates require consecutive samples.
 
-The local Docker image derives asset URLs from the ZIP hash to invalidate long-lived browser caches. Other packaging must also ensure upgraded browser assets are fetched; installing a new ZIP while reusing stale host asset URLs is not sufficient verification.
+The plugin uses the current administrator's scoped OpenSearch client to provision monitoring resources and a randomly named dedicated collector with a generated password. The collector gets the scoped monitoring role. The administrator password is not stored, collector credentials never pass through the browser, and setup does not edit `opensearch_dashboards.yml` or alter the host's TLS configuration. Keep certificate/hostname verification enabled and use your existing trusted CA configuration.
 
-## Provision storage and roles
+The generated credential file is `<path.data>/stack-monitoring/collector.json` with mode `0600`, inside a mode `0700` directory. It is bound to the cluster and collecting Dashboards instance. These permissions provide filesystem protection, **not encryption**. Protect and back up the persistent volume, restrict host access, and manage filesystem/volume encryption separately. Preserve both this file and the Dashboards instance UUID across restart or container replacement; never clone that data directory onto a second active instance.
 
-Use the generic provisioner for an existing secured cluster. It requires HTTPS with certificate and hostname verification; it has no insecure switch and refuses redirects. The CA file may be omitted when the server certificate chains to the system trust store.
+Setup explicitly enables the saved collection setting and starts the collector. A server setting of `stackMonitoring.collection.enabled: false` blocks it. Existing manually configured credentials override stored automatic credentials. A partial setup can be retried with the same generated collector account without resetting its password; resolve the reported permission/resource/storage problem before retrying. Another instance's ownership blocks setup; use [ownership recovery](#ownership-and-recovery) before moving collection.
+
+Setup does not assign human access globally. Map each viewer to `stack_monitoring_reader`, and each monitoring operator to both `stack_monitoring_reader` and `stack_monitoring_manager`, while preserving existing mappings. Give them the deployment's usual Dashboards sign-in and Global-tenant access separately. The manager role alone is not reader or sign-in access. Optional log views also require the user's read access to the configured log index.
+
+Use the following manual alternative for external identity management or a data directory where automatic credential storage is unavailable.
+
+## Manual provisioning and credentials
+
+Use this alternative when collector identities must be externally managed, automatic setup cannot write its secret under `path.data`, or you need explicit provisioning options. Existing manual credentials take precedence over an automatically stored collector. Use the generic provisioner for an existing secured cluster. It requires HTTPS with certificate and hostname verification; it has no insecure switch and refuses redirects. The CA file may be omitted when the server certificate chains to the system trust store.
 
 ```sh
 python3 scripts/provision-monitoring.py \
@@ -58,7 +92,7 @@ The script installs monitoring roles, index mappings, a write alias and backing 
 
 Apply your host's Dashboards/tenant access roles separately. Optional log views require read access to the configured log index. Provisioning privileges belong to an operator, not the long-running collector.
 
-## Configure the collecting host
+### Configure the manual collector
 
 Configure the host's TLS, authentication, and browser security before enabling collection. In particular, verify OpenSearch certificates with your CA and serve Dashboards through HTTPS with secure session cookies. Keep collector credentials in your secret-management mechanism and pass the password to the server configuration, not to the browser.
 
@@ -75,7 +109,7 @@ stackMonitoring.collection.resolvedRetentionDays: 30
 
 On every other Dashboards instance connected to the same cluster, set `stackMonitoring.collection.enabled: false`. Persist the collecting host's Dashboards data directory so its instance UUID survives restarts. Each actual instance must have a unique UUID: do not clone a running host's data directory onto another active host.
 
-Collection also requires the persisted self-monitoring setting. The UI control beside the date picker changes that setting with the signed-in user's permissions. Disabling preserves retained history. Settings that cannot be read do not silently enable collection.
+Restart Dashboards after providing manual credentials. Collection also requires the persisted self-monitoring setting. The UI control beside the date picker changes that setting with the signed-in user's permissions. Disabling preserves retained history. Settings that cannot be read do not silently enable collection.
 
 ## Ownership and recovery
 
@@ -100,7 +134,17 @@ Metrics and incident evidence have independent lifetimes. An old finding can ret
 
 ## Verify the installation
 
-After starting Dashboards, sign in as a monitoring reader and open `/app/stackMonitoring`. Confirm that samples advance, the expected nodes/indices appear, rates become available after consecutive samples, and no partial-data or stale warnings persist. Verify a read-only account cannot change self-monitoring and a denied account cannot read history. Test Insights failures independently from metric collection.
+After completing automatic or manual setup, sign in as a monitoring reader and open `/app/stackMonitoring`. Confirm that samples advance, the expected nodes/indices appear, rates become available after consecutive samples, and no partial-data or stale warnings persist. Verify a read-only account cannot change self-monitoring and a denied account cannot read history. Test Insights failures independently from metric collection.
+
+An authorized operator can inspect storage in Dashboards **Dev Tools** without changing it:
+
+```http
+GET /_cat/aliases/stack-monitoring-write?v
+GET /_cat/indices/stack-monitoring-v2-*?v
+GET /_plugins/_ism/explain/stack-monitoring-v2-*?show_policy=true
+```
+
+Expect the write alias, monitoring backing indices, and the attached `stack-monitoring-v2-retention` policy. Monitoring readers may not have ISM administration permissions.
 
 The repository's isolated tests and exact-host build do not prove live compatibility with your TLS, roles, deployment topology, or workload. Run authorized staging tests and observe actual rollover, retention cleanup, restart identity, and ownership recovery before relying on the installation.
 

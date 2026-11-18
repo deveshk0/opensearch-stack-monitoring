@@ -71,12 +71,13 @@ export class Collector {
     this.state.last_error = null;
     if (enabled) await this.runOnce();
   }
-  start() {
+  start(immediate = true) {
     const tick = async () => {
       await this.runOnce();
       if (!this.stopped) this.timer = setTimeout(tick, SAMPLE_INTERVAL);
     };
-    void tick();
+    if (immediate) void tick();
+    else this.timer = setTimeout(tick, SAMPLE_INTERVAL);
   }
   async stop() {
     this.stopped = true;

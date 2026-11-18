@@ -5,13 +5,13 @@ See how your OpenSearch cluster is doing—and where to investigate next—witho
 [![Checks](https://github.com/deveshk0/opensearch-stack-monitoring/actions/workflows/ci.yml/badge.svg)](https://github.com/deveshk0/opensearch-stack-monitoring/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/deveshk0/opensearch-stack-monitoring)](https://github.com/deveshk0/opensearch-stack-monitoring/releases/latest)
 [![Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Dashboards 3.9.0](https://img.shields.io/badge/OpenSearch%20Dashboards-3.9.0-00a4b4)](docs/installation.md)
+[![Exact host builds](https://img.shields.io/badge/OpenSearch%20Dashboards-exact%20host%20builds-00a4b4)](docs/installation.md#compatibility)
 
 **[Install](#install) · [Try locally](#try-it-locally) · [Documentation](#documentation) · [Contribute](CONTRIBUTING.md)**
 
 ![Cluster overview showing health, nodes, indices, and Dashboards metrics](docs/reference/opensearch/02-overview.png)
 
-An independent community plugin for **OpenSearch Dashboards 3.9.0**. This project is not an official OpenSearch release or affiliated with Elastic.
+An independent community plugin for **OpenSearch Dashboards**, distributed as [exact-version builds](docs/installation.md#compatibility). This project is not an official OpenSearch release or affiliated with Elastic.
 
 ## What you can do
 
@@ -33,42 +33,123 @@ This screenshot comes from a controlled test. Insights suggest investigations; t
 
 ## Install
 
-These steps add the plugin to an **existing, working OpenSearch and Dashboards installation**. For a new local cluster, use [Try it locally](#try-it-locally). Install this ZIP in **Dashboards**, not on the OpenSearch nodes.
+Install the plugin in your **existing OpenSearch Dashboards installation**, restart Dashboards, sign in as a Security administrator, and click **Set up monitoring**. The setup button creates the monitoring resources and a dedicated collector; it needs no collector password entry or host YAML edits.
 
-| Requirement | Supported setup |
+For a new local cluster, use [Try it locally](#try-it-locally). Install the ZIP in **Dashboards**, not on OpenSearch nodes.
+
+| Requirement | Setup |
 | --- | --- |
-| OpenSearch / OpenSearch Dashboards | **3.9.0**; other versions are not verified |
+| Host version | Download the ZIP matching the exact Dashboards version; see [compatibility](docs/installation.md#compatibility) |
 | Collection | One attached cluster, one collecting Dashboards instance |
 | OpenSearch plugins | Security and Index Management enabled |
-| Operator access | An identity authorized to manage monitoring indices, templates, ISM policies, and Security roles |
-| Setup tools | Git, curl, Python 3, and `shasum` (or `sha256sum` on Linux) |
-| Connectivity | Verified HTTPS access to OpenSearch; the cluster CA certificate if privately signed |
-
-**[Download](#1-download-and-verify) → [Provision](#2-provision-monitoring-storage) → [Assign access](#3-create-the-collector-account-and-map-roles) → [Install](#4-install-the-plugin) → [Configure](#5-configure-collection) → [Verify](#6-start-dashboards-and-verify)**
+| Setup identity | A signed-in Security administrator authorized to create monitoring resources, roles, and internal users |
+| Dashboards storage | Writable, persistent `path.data`; use [manual setup](#manual-setup) for externally managed credentials or read-only data storage |
+| Connectivity | Existing verified OpenSearch TLS and authentication; keep your secured Dashboards configuration |
 
 ### 1. Download and verify
 
-Choose a tag from [Releases](https://github.com/deveshk0/opensearch-stack-monitoring/releases). The example pins `v1.0.0`; replace it with your chosen release. Use a fresh working directory and the same terminal for the commands below. Checking out the matching source provides the provisioner and Dockerfile; **you do not need Node or a source build to install a release**.
+Choose an available tag from [Releases](https://github.com/deveshk0/opensearch-stack-monitoring/releases). `v1.1.0` below is the new feature release example; use it only once published. Select your exact Dashboards version. Use a fresh directory and the same terminal for these commands. The matching checkout provides the Dockerfile and optional manual provisioner; installing a release does **not** require Node or a source build.
 
 ```sh
-release_tag=v1.0.0
+release_tag=v1.1.0 # Choose an available release.
+OPENSEARCH_VERSION=3.9.0 # Match your existing OpenSearch/Dashboards deployment.
+plugin_asset="stack-monitoring-$OPENSEARCH_VERSION.zip"
 git clone --depth 1 --branch "$release_tag" \
   https://github.com/deveshk0/opensearch-stack-monitoring.git
 cd opensearch-stack-monitoring
 monitoring_checkout="$PWD"
 mkdir -p artifacts
 
-curl -fL "https://github.com/deveshk0/opensearch-stack-monitoring/releases/download/$release_tag/stack-monitoring.zip" \
-  -o artifacts/stack-monitoring.zip
+curl -fL "https://github.com/deveshk0/opensearch-stack-monitoring/releases/download/$release_tag/$plugin_asset" \
+  -o "artifacts/$plugin_asset"
 curl -fL "https://github.com/deveshk0/opensearch-stack-monitoring/releases/download/$release_tag/SHA256SUMS" \
   -o artifacts/SHA256SUMS
-(cd artifacts && shasum -a 256 -c SHA256SUMS)
-plugin_zip="$PWD/artifacts/stack-monitoring.zip"
+(
+  cd artifacts || exit 1
+  awk -v name="$plugin_asset" '$2 == name { print; found++ } END { if (found != 1) exit 1 }' \
+    SHA256SUMS > selected-SHA256SUMS &&
+    shasum -a 256 -c selected-SHA256SUMS
+)
+plugin_zip="$PWD/artifacts/$plugin_asset"
 ```
 
-Continue only if verification reports **`stack-monitoring.zip: OK`**. On Linux, `sha256sum -c SHA256SUMS` is an alternative. Plugin release versions and host compatibility are separate: a release such as `v1.1.0` still requires the Dashboards version stated in its release notes.
+Continue only if verification reports **your selected ZIP: OK**. Linux users may replace `shasum -a 256` with `sha256sum`. `SHA256SUMS` covers all release assets; filtering the exact filename verifies the one you downloaded without requiring other ZIPs. Plugin release numbers and host versions are separate. The generic `stack-monitoring.zip` asset targets **3.9.0 only**.
 
-### 2. Provision monitoring storage
+### 2. Install and restart Dashboards
+
+Preserve the existing configuration and data directory. Choose the option matching your deployment.
+
+**Debian/RPM package with systemd**
+
+```sh
+sudo systemctl stop opensearch-dashboards
+cd /usr/share/opensearch-dashboards
+sudo bin/opensearch-dashboards-plugin install "file://${plugin_zip}" --single-version strict --allow-root
+sudo bin/opensearch-dashboards-plugin list --allow-root
+sudo systemctl start opensearch-dashboards
+sudo systemctl status opensearch-dashboards --no-pager
+```
+
+The plugin list should include **`stackMonitoring@<release-version>`**. For a tarball installation, stop the managed process, run the same plugin commands from its installation directory **as the installation owner**, without `sudo` or `--allow-root`, then restart through your usual process manager.
+
+<details>
+<summary><strong>Docker: build a Dashboards image containing the release ZIP</strong></summary>
+
+The Dockerfile expects the verified archive at `artifacts/stack-monitoring.zip`, including when you downloaded a version-specific asset:
+
+```sh
+cd "$monitoring_checkout"
+cp "artifacts/$plugin_asset" artifacts/stack-monitoring.zip
+docker build -f docker/Dockerfile.dashboards \
+  --build-arg OPENSEARCH_VERSION="$OPENSEARCH_VERSION" \
+  -t "local/stack-monitoring-dashboards:$release_tag-$OPENSEARCH_VERSION" .
+```
+
+Use that image for your **existing Dashboards service**. Preserve its connection settings, network, certificates, server credentials, and configured `opensearch_dashboards.yml`. Retain a persistent volume at `/usr/share/opensearch-dashboards/data` (or your configured `path.data`); the collector secret and instance identity must survive replacement. Automatic setup does not require a collector-password environment variable.
+
+Update the image reference in your own Compose file and recreate Dashboards (replace the service name if needed):
+
+```sh
+docker compose up -d --no-deps dashboards
+docker compose logs --tail=100 dashboards
+```
+
+Rebuild for every plugin upgrade; installing into a running container is not persistent. The Dockerfile gives browser assets an archive-specific build identity. The repository's Compose configuration and `docker/opensearch_dashboards.yml` are a local demo with unverified TLS; keep your existing secured configuration for an external cluster.
+
+</details>
+
+### 3. Set up monitoring
+
+1. Sign in as a Security administrator and choose the **Global** tenant.
+2. Open **Stack Monitoring** from navigation, or `/app/stackMonitoring` under your Dashboards URL and base path.
+3. Open **Set up monitoring** beside the date picker (or **Self-monitoring**), review the explanation, and click **Set up monitoring**.
+4. Wait for a successful sample. The UI shows **Waiting for the first collected sample** until collection succeeds. Confirm the last-success time advances, nodes and indices appear, and charts show rates after at least two ten-second samples. Use **Last 15 minutes** when checking fresh data.
+
+Setup uses your current administrator session to create monitoring indices, roles, rollover/retention resources, and a randomly named dedicated collector with a generated password. It stores only that collector's credentials on the Dashboards server, never your administrator password, and starts collection using the host's existing TLS settings. Retrying partial setup reuses its collector account without resetting its password.
+
+The secret is stored at `<path.data>/stack-monitoring/collector.json`, with file mode `0600` and directory mode `0700`. This is filesystem protection, **not encryption**. Protect and back up the data volume; manage disk encryption through your deployment. Setup never edits host YAML. Existing manual collector credentials take precedence, and `stackMonitoring.collection.enabled: false` blocks automatic setup. Use the manual path below when your data directory is read-only or collector identities must be managed externally.
+
+The setup action explicitly enables the saved collection setting. Provisioning resources alone preserves an existing enable/disable choice. Another collector's ownership blocks setup; see [ownership and recovery](docs/installation.md#ownership-and-recovery) before moving collection.
+
+### 4. Give people access
+
+Setup does not grant access to all users. In **Security → Roles → Mapped users**, preserve existing mappings and add your human users or identity-provider backend roles:
+
+| Identity | Monitoring roles |
+| --- | --- |
+| Viewer | `stack_monitoring_reader` |
+| Monitoring operator | `stack_monitoring_reader` **and** `stack_monitoring_manager` |
+
+Human users also need the deployment's usual Dashboards sign-in permissions and **Global** tenant access. The manager role alone does not grant read or sign-in access. Keep the Dashboards server identity separate from the collector. Verify a viewer can read monitoring but cannot change collection; administrators remain responsible for assigning access.
+
+### Manual setup
+
+<details>
+<summary><strong>Provision resources, supply a dedicated identity, and configure its server-side secret</strong></summary>
+
+Use this alternative for externally managed identities, custom provisioning options, or data directories where automatic credential storage is unavailable. Complete these steps before restarting the collecting host. Existing manual credentials override automatically stored credentials.
+
+#### Provision storage and roles
 
 From the checked-out repository, run the provisioner against your cluster. Replace the endpoint, CA path, and provisioning username:
 
@@ -87,7 +168,7 @@ The script creates monitoring roles, templates, the `stack-monitoring-write` ali
 
 Provisioning preserves an existing self-monitoring choice and does **not** create users or role mappings. It updates named monitoring resources, so review retention changes before rerunning it on an installation with history. Keep provisioning privileges separate from the collector account used below.
 
-### 3. Create the collector account and map roles
+#### Create a dedicated collector and map roles
 
 While Dashboards is still running, sign in as a Security administrator:
 
@@ -103,51 +184,9 @@ While Dashboards is still running, sign in as a Security administrator:
 
 Human users also need your deployment's usual Dashboards sign-in permissions (for example, `kibana_user`) and access to the **Global** tenant. The reader role includes Global-tenant read access. The manager role alone does not grant read or sign-in access. Keep your existing Dashboards server identity and its roles unchanged; the collector is a separate account. See the [OpenSearch role-mapping guide](https://docs.opensearch.org/3.9/security/access-control/users-roles/) for external identity providers.
 
-### 4. Install the plugin
+#### Configure the collecting process
 
-Choose the option matching your Dashboards deployment. Preserve its configuration and data directory before changes.
-
-**Debian/RPM package with systemd**
-
-The commands below use the standard package installation directory. Stop Dashboards, install the verified local ZIP, and confirm the plugin appears:
-
-```sh
-sudo systemctl stop opensearch-dashboards
-cd /usr/share/opensearch-dashboards
-sudo bin/opensearch-dashboards-plugin install "file://${plugin_zip}" --allow-root
-sudo bin/opensearch-dashboards-plugin list --allow-root
-```
-
-The list should include **`stackMonitoring@<release-version>`**. Keep the service stopped until step 5 is complete. For tarball installations, stop your managed process and run the same plugin commands from its installation directory **as the installation owner**, without `sudo` or `--allow-root`. These commands follow the [official plugin-manager instructions](https://docs.opensearch.org/3.9/install-and-configure/install-dashboards/plugins/).
-
-<details>
-<summary><strong>Docker: build a Dashboards image containing the release ZIP</strong></summary>
-
-From the matching repository checkout, with the verified ZIP in `artifacts/`:
-
-```sh
-cd "$monitoring_checkout"
-docker build -f docker/Dockerfile.dashboards \
-  --build-arg OPENSEARCH_VERSION=3.9.0 \
-  -t "local/stack-monitoring-dashboards:$release_tag" .
-```
-
-Use this image for your **existing Dashboards service**. Keep its OpenSearch connection settings, network, certificates, and server credentials. Mount your configured `opensearch_dashboards.yml` at `/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml`, inject `MONITORING_COLLECTOR_PASSWORD` into the container, and retain a persistent volume at `/usr/share/opensearch-dashboards/data`.
-
-The supplied Dockerfile installs the plugin and gives browser assets an archive-specific build identity. Rebuild the image for each plugin upgrade; installing into a running container is not persistent. The repository's Compose configuration and `docker/opensearch_dashboards.yml` are for the local demo, with unverified TLS; use your existing secured configuration for an external cluster.
-
-After completing step 5, update the image reference in your own Compose file and recreate the Dashboards service (replace `dashboards` if your service has another name):
-
-```sh
-docker compose up -d --no-deps dashboards
-docker compose logs --tail=100 dashboards
-```
-
-</details>
-
-### 5. Configure collection
-
-Add these settings to your existing `opensearch_dashboards.yml`: normally `/etc/opensearch-dashboards/opensearch_dashboards.yml` for packages, or `config/opensearch_dashboards.yml` under a tarball/container installation. Use the dedicated account from step 3:
+Add these settings to your existing `opensearch_dashboards.yml`: normally `/etc/opensearch-dashboards/opensearch_dashboards.yml` for packages, or `config/opensearch_dashboards.yml` under a tarball/container installation. Use the dedicated account created above:
 
 ```yaml
 stackMonitoring.collection.enabled: true
@@ -182,66 +221,42 @@ For Docker, inject the environment variable through your deployment's secret mec
 
 Enable collection on **one instance only**. Set `stackMonitoring.collection.enabled: false` on any other Dashboards instances attached to this cluster. Persist the collecting instance's data directory so its UUID survives restarts; never share or clone that directory between active instances.
 
-### 6. Start Dashboards and verify
+Restart Dashboards through your normal process manager, then open **Self-monitoring** and confirm an advancing last-success time. The manual provisioner preserves an existing saved choice; enable collection in the UI if needed.
 
-For systemd packages:
-
-```sh
-sudo systemctl start opensearch-dashboards
-sudo systemctl status opensearch-dashboards --no-pager
-sudo journalctl -u opensearch-dashboards -n 100 --no-pager
-```
-
-For Docker or tarballs, start/recreate the service using its normal process manager.
-
-1. Sign in as a monitoring operator from step 3 and choose the **Global** tenant.
-2. Open **Stack Monitoring** from the navigation, or visit `/app/stackMonitoring` under your Dashboards URL (including any configured base path).
-3. Open **Self-monitoring** beside the date picker. Confirm collection is enabled, or enable it. Fresh provisioning enables the persisted setting; rerunning provisioning preserves the previous choice.
-4. Allow at least two ten-second samples. Confirm the last-success time advances, nodes and indices appear, and charts start showing rates. Choose **Last 15 minutes** when checking fresh data.
-5. Sign in as a viewer to check that metrics are readable and the self-monitoring setting cannot be changed. Healthy clusters can have an empty Insights view; a sustained breach needs at least 60 seconds before an insight appears.
-
-In Dashboards **Dev Tools**, an authorized operator can inspect storage without changing it:
-
-```http
-GET /_cat/aliases/stack-monitoring-write?v
-GET /_cat/indices/stack-monitoring-v2-*?v
-GET /_plugins/_ism/explain/stack-monitoring-v2-*?show_policy=true
-```
-
-Expect a write alias, monitoring backing indices, and the attached `stack-monitoring-v2-retention` policy. Normal monitoring readers may not have ISM administration permissions.
+</details>
 
 ### Upgrade or remove
 
-To upgrade, choose a new release tag and repeat the matching-source download and checksum verification in a fresh working directory. Read its release notes and preserve your configuration, data directory, and monitoring backups. Rerun the matching provisioner if that release changes monitoring roles or storage resources.
+Choose the release and ZIP matching your exact host version, verify its checksum, and preserve configuration, persistent data, and monitoring backups. Read the release's migration instructions; use its matching provisioner only when required resource changes call for it.
 
-For a package installation, stop Dashboards, remove the old plugin code, and install the new verified ZIP:
+For a package installation:
 
 ```sh
 sudo systemctl stop opensearch-dashboards
 cd /usr/share/opensearch-dashboards
 sudo bin/opensearch-dashboards-plugin remove stackMonitoring --allow-root
-sudo bin/opensearch-dashboards-plugin install "file://${plugin_zip}" --allow-root
+sudo bin/opensearch-dashboards-plugin install "file://${plugin_zip}" --single-version strict --allow-root
 sudo systemctl start opensearch-dashboards
 ```
 
-Tarball owners use the same plugin commands without `sudo` / `--allow-root`. Docker deployments rebuild and replace the image. Confirm the installed version, fresh monitoring samples, and updated browser assets after every upgrade. If your proxy or browser serves old plugin assets, invalidate those cached assets; the supplied Docker image changes the asset build identity automatically.
+Tarball owners omit `sudo` and `--allow-root`; Docker deployments rebuild and replace the image. Preserve `path.data` so the stored collector and instance UUID survive. Confirm the installed version, fresh samples, and current browser assets after an upgrade. Invalidate stale proxy/browser assets if necessary.
 
-To uninstall, first disable self-monitoring and stop the collecting instance, then remove the plugin (or deploy an image without it). Remove `stackMonitoring.*` configuration entries before restarting Dashboards. Plugin removal leaves monitoring indices in place; the existing ISM policy can still expire metrics, while plugin-driven incident cleanup stops. Follow [ownership recovery](docs/installation.md#ownership-and-recovery) before moving collection to a different instance.
+To uninstall, disable self-monitoring, stop the collecting instance, and remove the plugin or deploy an image without it. Remove any `stackMonitoring.*` configuration before restarting. Plugin removal leaves monitoring indices and the saved collector credential file in place; retire that account and securely remove its secret when no longer needed. Existing ISM policies can still expire metrics, while plugin-driven incident cleanup stops.
 
 ### Installation troubleshooting
 
 | Symptom | Check |
 | --- | --- |
-| Installer rejects compatibility | Use Dashboards **3.9.0** and the release's plugin ZIP, not GitHub's source ZIP. |
-| Dashboards cannot resolve `MONITORING_COLLECTOR_PASSWORD` | Provide the variable to the service/container and restart it; an export in your shell does not configure systemd. |
-| `401` / `403` during collection | Verify the dedicated account's credentials and its `stack_monitoring_collector` mapping. Recheck the provisioner output. |
-| `403` while viewing or toggling collection | Viewers need reader and Dashboards access; toggling additionally needs the manager role. |
-| No monitoring data | Check both collection switches, last-success/error status, the time range, and Dashboards logs. Confirm provisioning completed. |
-| Another collector owns the cluster | Stop the former collector and use the documented [ownership recovery](docs/installation.md#ownership-and-recovery); do not delete the lock while it can still collect. |
-| Certificate/hostname error | Use the correct HTTPS endpoint and trusted CA, and verify certificate names. Keep TLS verification enabled. |
-| Monitoring indices are yellow | Ensure enough data nodes can host the configured replicas; inspect allocation before changing settings. |
+| Installer rejects compatibility | Select the ZIP for the exact Dashboards host version, not GitHub's source ZIP. |
+| Setup unavailable | Sign in as an authorized Security administrator; check the server collection switch and writable persistent data storage. |
+| Setup failed | Check Dashboards logs, correct the reported resource/permission/storage problem, and retry. Do not reset the generated account's password. |
+| No monitoring data | Check last-success/error status, both collection switches, the time range, and Dashboards logs. Setup completion is not proof of a collected sample. |
+| `403` while viewing or toggling | Viewers need reader and Dashboards access; toggling also needs the manager role. |
+| Another collector owns the cluster | Stop the former collector and follow [ownership recovery](docs/installation.md#ownership-and-recovery). |
+| Manual credentials fail | Verify the collector role mapping and supply `MONITORING_COLLECTOR_PASSWORD` to the service/container, not just your shell. |
+| Certificate/hostname error | Use the correct HTTPS endpoint and trusted CA. Keep TLS verification enabled. |
 
-For storage lifecycle details and operational recovery, see [Installation and operations](docs/installation.md).
+See [Installation and operations](docs/installation.md) for storage, retention, and recovery details.
 
 ## Try it locally
 
@@ -280,7 +295,7 @@ docker compose --env-file .opensearch.env -f compose.opensearch.yml stop
 
 ## Releases and project status
 
-Successful updates to `main` automatically publish a GitHub release after tests, the official plugin build, and type-checking pass. Releases include the installable ZIP, SHA-256 checksum, and generated change notes. `feat:` commits increment the minor version; breaking changes increment the major version; other updates increment the patch version. See [release details](CONTRIBUTING.md#releases).
+Successful updates to `main` automatically publish a GitHub release after tests, the official plugin build, and type-checking pass. Releases include host-version-specific installable ZIPs, a SHA-256 checksum manifest, and generated change notes. `feat:` commits increment the minor version; breaking changes increment the major version; other updates increment the patch version. See [release details](CONTRIBUTING.md#releases).
 
 The plugin supports one collecting instance and a maximum chart window of 24 hours. It does not provide automatic collector failover, remote-cluster enrollment, log shipping, or alert delivery. Optional logs require an existing log index. Validate workload capacity, permissions, and recovery in staging; complete cluster outages need independent monitoring.
 
