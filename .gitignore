@@ -1,0 +1,13 @@
+.env
+http_ca.crt
+.opensearch.env
+.cache/
+.superpowers/
+node_modules/
+build/
+artifacts/
+*.log
+.DS_Store
+__pycache__/
+*.pyc
+docs/superpowers/

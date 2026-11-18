@@ -1,0 +1,462 @@
+[
+  {
+    "route": "home",
+    "url": "http://localhost:5601/app/monitoring#/overview?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))",
+    "text": "elastic-local - Clusters - Elastic\nSkip to main content\n⌘/\n\nUse the Up and Down arrow keys to move focus over options. Press Enter to select. Press Escape to collapse options.\n\nAI Agent\nE\nD\nClusters\nelastic-local\nAlerts and rules\nCluster overview\nLast 15 minutes\nRefresh\n\nNew! Connect this cluster to AutoOps\n\nUnlock advanced monitoring of ECE, ECK, and self-managed clusters with AutoOps, now available for free across all license types. Set it up today using Cloud Connect.\n\nLoading…",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "url": "#"
+      },
+      {
+        "text": "",
+        "url": "/app/home"
+      },
+      {
+        "text": "Clusters",
+        "url": "#/home"
+      },
+      {
+        "text": "Cloud Connect",
+        "url": "/app/cloud_connect"
+      }
+    ]
+  },
+  {
+    "route": "overview",
+    "url": "http://localhost:5601/app/monitoring#/overview?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))",
+    "text": "elastic-local - Clusters - Elastic\nSkip to main content\n⌘/\n\nUse the Up and Down arrow keys to move focus over options. Press Enter to select. Press Escape to collapse options.\n\nAI Agent\nE\nD\nClusters\nelastic-local\nEnter setup mode\nAlerts and rules\nCluster overview\nLast 15 minutes\nRefresh\n\nNew! Connect this cluster to AutoOps\n\nUnlock advanced monitoring of ECE, ECK, and self-managed clusters with AutoOps, now available for free across all license types. Set it up today using Cloud Connect.\n\nelastic-local\nStack Monitoring Overview\nElasticsearch\nOverview\nHealth\nHealthy\nVersion\n9.5.6\nUptime\n9 minutes\nLicense\nBasic\nNodes: 3\nDisk Available\n91.78%\n4.9 TB / 5.4 TB\nJVM Heap\n70.38%\n1.1 GB / 1.5 GB\nIndices: 54\nDocuments\n1,769\nDisk Usage\n11.6 MB\nPrimary Shards\n54\nReplica Shards\n54\nLogs\n\nNo log data found\n\nSet up Filebeat\n(external, opens in a new tab or window)\n, then configure your Elasticsearch output to your monitoring cluster.\n\nKibana\nHealthy\nOverview\nRequests\n11\nMax. Response Time\n51 ms\nInstances: 1\nConnections\n2\nMemory Usage\n87.72%\n1.1 GB / 1.2 GB",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "url": "#"
+      },
+      {
+        "text": "",
+        "url": "/app/home"
+      },
+      {
+        "text": "Clusters",
+        "url": "#/home"
+      },
+      {
+        "text": "Cloud Connect",
+        "url": "/app/cloud_connect"
+      },
+      {
+        "text": "elastic-local",
+        "url": "#/overview"
+      },
+      {
+        "text": "Overview",
+        "url": "#/elasticsearch?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Basic",
+        "url": "#/license?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Nodes: 3",
+        "url": "#/elasticsearch/nodes?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Indices: 54",
+        "url": "#/elasticsearch/indices?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Logs",
+        "url": "#/elasticsearch?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Filebeat\n(external, opens in a new tab or window)",
+        "url": "https://www.elastic.co/docs/reference/beats/filebeat/filebeat-installation-configuration"
+      },
+      {
+        "text": "Overview",
+        "url": "#/kibana?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Instances: 1",
+        "url": "#/kibana/instances?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      }
+    ]
+  },
+  {
+    "route": "elasticsearch",
+    "url": "http://localhost:5601/app/monitoring#/elasticsearch?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))",
+    "text": "Elasticsearch - elastic-local - Clusters - Elastic\nSkip to main content\n⌘/\n\nUse the Up and Down arrow keys to move focus over options. Press Enter to select. Press Escape to collapse options.\n\nAI Agent\nE\nD\nClusters\nelastic-local\nElasticsearch\nAlerts and rules\nElasticsearch overview\nLast 15 minutes\nRefresh\nOverview\nNodes\nIndices\nIngest Pipelines\n\nStatus\n\n Green\n\nNodes\n\n3\n\nIndices\n\n54\n\nJVM Heap\n\n1.1 GB / 1.5 GB\n\nTotal shards\n\n108\n\nUnassigned shards\n\n0\n\nDocuments\n\n1,769\n\nData\n\n11.6 MB\n\nSearch Rate (/s)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Total Shards: Number of search requests being executed across primary and replica shards. A single search can run against multiple shards!\nTotal Shards\nN/A\nSearch Latency (ms)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Search Latency: Average latency for searching, which is time it takes to execute searches divided by number of searches submitted. This considers primary and replica shards.\nSearch Latency\nN/A\nIndexing Rate (/s)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Total Shards: Number of documents being indexed for primary and replica shards.. Primary Shards: Number of documents being indexed for primary shards.\nTotal Shards\nN/A\nPrimary Shards\nN/A\nIndexing Latency (ms)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Indexing Latency: Average latency for indexing documents, which is time it takes to index documents divided by number that were indexed. This only considers primary shards.\nIndexing Latency\nN/A\nRecent Log Entries\n\nShowing the most recent log entries for this cluster, up to 10 total log entries.\n\nNo log data found\n\nSet up Filebeat\n(external, opens in a new tab or window)\n, then configure your Elasticsearch output to your monitoring cluster.\n\nShard Activity\nCompleted recoveries\n𐘂𐘂\n✄𐘗\n\nMonitoring data table (empty),\n\nNo items found,\n✄𐘗\nIndex\n↦\n\t\nStage\n↦\n\t\nTotal Time\n↦\n\t\nSource / Destination\n↦\n\t\nFiles\n↦\n\t\nBytes\n↦\n\t\nTranslog\n↵\n\n\nNo items found\n𐘂𐘂",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "url": "#"
+      },
+      {
+        "text": "",
+        "url": "/app/home"
+      },
+      {
+        "text": "Clusters",
+        "url": "#/home"
+      },
+      {
+        "text": "elastic-local",
+        "url": "#/overview?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Overview",
+        "url": "#/elasticsearch"
+      },
+      {
+        "text": "Nodes",
+        "url": "#/elasticsearch/nodes"
+      },
+      {
+        "text": "Indices",
+        "url": "#/elasticsearch/indices"
+      },
+      {
+        "text": "Filebeat\n(external, opens in a new tab or window)",
+        "url": "https://www.elastic.co/docs/reference/beats/filebeat/filebeat-installation-configuration"
+      }
+    ]
+  },
+  {
+    "route": "elasticsearch/nodes",
+    "url": "http://localhost:5601/app/monitoring#/elasticsearch/nodes?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))",
+    "text": "Elasticsearch - elastic-local - Clusters - Elastic\nSkip to main content\n⌘/\n\nUse the Up and Down arrow keys to move focus over options. Press Enter to select. Press Escape to collapse options.\n\nAI Agent\nE\nD\nClusters\nelastic-local\nElasticsearch\nEnter setup mode\nAlerts and rules\nElasticsearch nodes\nLast 15 minutes\nRefresh\nOverview\nNodes\nIndices\nIngest Pipelines\nElasticsearch nodes\n\nStatus\n\n Green\n\nAlerts\n\n0\n\nNodes\n\n3\n\nIndices\n\n54\n\nJVM Heap\n\n1.1 GB / 1.5 GB\n\nTotal shards\n\n108\n\nUnassigned shards\n\n0\n\nDocuments\n\n1,769\n\nData\n\n11.6 MB\n\n𐘂𐘂\n✄𐘗\n\nMonitored instances,\n\nShowing 3 of 3 data rows.\n\n✄𐘗\nName\n↦\n\t\nAlerts\n↦\n\t\nStatus\n↦\n\t\nRoles\n↦\n\t\nShards\n↦\n\t\nCPU Usage\n↦\n\t\nCPU Throttling\n↦\n\t\nJVM Heap\n↦\n\t\nDisk Free Space\n↵\n\n\n  es01\n10.100.4.3:9300\n↦\n\t\nClear\n↦\n\t\nOnline\n↦\n\t\nN/A\n↦\n\t\n36\n↦\n\t\nN/A\n↦\n\t\n0\n↦\n\t\n51%\n↦\n\t\n1.6 TB\n↵\n\n\n  es02\n10.100.4.4:9300\n↦\n\t\nClear\n↦\n\t\nOnline\n↦\n\t\nN/A\n↦\n\t\n36\n↦\n\t\nN/A\n↦\n\t\n0\n↦\n\t\n82%\n↦\n\t\n1.6 TB\n↵\n\n\n  es03\n10.100.4.5:9300\n↦\n\t\nClear\n↦\n\t\nOnline\n↦\n\t\nN/A\n↦\n\t\n36\n↦\n\t\nN/A\n↦\n\t\n0\n↦\n\t\n77%\n↦\n\t\n1.6 TB\n↵\n𐘂𐘂\nRows per page: 20\nPage 1 of 1\n1",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "url": "#"
+      },
+      {
+        "text": "",
+        "url": "/app/home"
+      },
+      {
+        "text": "Clusters",
+        "url": "#/home"
+      },
+      {
+        "text": "elastic-local",
+        "url": "#/overview?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Overview",
+        "url": "#/elasticsearch"
+      },
+      {
+        "text": "Nodes",
+        "url": "#/elasticsearch/nodes"
+      },
+      {
+        "text": "Indices",
+        "url": "#/elasticsearch/indices"
+      },
+      {
+        "text": "es01",
+        "url": "#/elasticsearch/nodes/WzQKxzO0RRK4c1XKeOwCyw?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "es02",
+        "url": "#/elasticsearch/nodes/xS5xZEwOQQ28lWpWIQ7lug?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "es03",
+        "url": "#/elasticsearch/nodes/FXCnEJ-NQKGrAO1CsKtpUQ?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      }
+    ]
+  },
+  {
+    "route": "elasticsearch/indices",
+    "url": "http://localhost:5601/app/monitoring#/elasticsearch/indices?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))",
+    "text": "Elasticsearch - elastic-local - Clusters - Elastic\nSkip to main content\n⌘/\n\nUse the Up and Down arrow keys to move focus over options. Press Enter to select. Press Escape to collapse options.\n\nAI Agent\nE\nD\nClusters\nelastic-local\nElasticsearch\nEnter setup mode\nAlerts and rules\nElasticsearch indices\nLast 15 minutes\nRefresh\nOverview\nNodes\nIndices\nIngest Pipelines\nElasticsearch indices\n\nStatus\n\n Green\n\nAlerts\n\n0\n\nNodes\n\n3\n\nIndices\n\n54\n\nJVM Heap\n\n1.1 GB / 1.5 GB\n\nTotal shards\n\n108\n\nUnassigned shards\n\n0\n\nDocuments\n\n1,769\n\nData\n\n11.6 MB\n\nFilter for system indices\n𐘂𐘂\n✄𐘗\n\nMonitoring data table (empty),\n\nNo items found,\n✄𐘗\nName\n↦\n\t\nAlerts\n↦\n\t\nStatus\n↦\n\t\nDocument Count\n↦\n\t\nData\n↦\n\t\nIndex Rate\n↦\n\t\nSearch Rate\n↦\n\t\nUnassigned Shards\n↵\n\n\nNo items found\n𐘂𐘂",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "url": "#"
+      },
+      {
+        "text": "",
+        "url": "/app/home"
+      },
+      {
+        "text": "Clusters",
+        "url": "#/home"
+      },
+      {
+        "text": "elastic-local",
+        "url": "#/overview?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Overview",
+        "url": "#/elasticsearch"
+      },
+      {
+        "text": "Nodes",
+        "url": "#/elasticsearch/nodes"
+      },
+      {
+        "text": "Indices",
+        "url": "#/elasticsearch/indices"
+      }
+    ]
+  },
+  {
+    "route": "kibana",
+    "url": "http://localhost:5601/app/monitoring#/kibana?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))",
+    "text": "Kibana - elastic-local - Clusters - Elastic\nSkip to main content\n⌘/\n\nUse the Up and Down arrow keys to move focus over options. Press Enter to select. Press Escape to collapse options.\n\nAI Agent\nE\nD\nClusters\nelastic-local\nKibana\nAlerts and rules\nKibana overview\nLast 15 minutes\nRefresh\nOverview\nInstances\n\nStatus\n\n Green\n\nInstances\n\n1\n\nMemory\n\n1.1 GB / 1.2 GB\n\nRequests\n\n115\n\nConnections\n\n8\n\nMax. Response Time\n\n1929 ms\n\nClient Requests\nThis chart is not screen reader accessible\nInterval: 10 seconds. Client Requests: Total number of client requests received by the Kibana instance.\nClient Requests\nN/A\nClient Response Time (ms)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Max: Maximum response time for client requests to the Kibana instance.. Average: Average response time for client requests to the Kibana instance.\nMax\nN/A\nAverage\nN/A",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "url": "#"
+      },
+      {
+        "text": "",
+        "url": "/app/home"
+      },
+      {
+        "text": "Clusters",
+        "url": "#/home"
+      },
+      {
+        "text": "elastic-local",
+        "url": "#/overview?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Overview",
+        "url": "#/kibana"
+      },
+      {
+        "text": "Instances",
+        "url": "#/kibana/instances"
+      }
+    ]
+  },
+  {
+    "route": "kibana/instances",
+    "url": "http://localhost:5601/app/monitoring#/kibana/instances?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))",
+    "text": "Kibana - elastic-local - Clusters - Elastic\nSkip to main content\n⌘/\n\nUse the Up and Down arrow keys to move focus over options. Press Enter to select. Press Escape to collapse options.\n\nAI Agent\nE\nD\nClusters\nelastic-local\nKibana\nEnter setup mode\nAlerts and rules\nKibana instances\nLast 15 minutes\nRefresh\nOverview\nInstances\nKibana instances\n\nStatus\n\n Green\n\nAlerts\n\n0\n\nInstances\n\n1\n\nMemory\n\n1.1 GB / 1.2 GB\n\nRequests\n\n115\n\nConnections\n\n8\n\nMax. Response Time\n\n1929 ms\n\n𐘂𐘂\n✄𐘗\n\nMonitoring data table,\n\nShowing 1 of 1 data rows.\n\n✄𐘗\nName\n↦\n\t\nAlerts\n↦\n\t\nLast Reported Status\n↦\n\t\nLast Seen\n↦\n\t\nLoad Average\n↦\n\t\nMemory Size\n↦\n\t\nRequests\n↦\n\t\nResponse Times\n↵\n\n\ne8f91c7176e3\n↦\n\t\nClear\n↦\n\t\nGreen\n↦\n\t\nA few seconds ago\n↦\n\t\n0.56\n↦\n\t\n1.1 GB\n↦\n\t\n115\n↦\n\t\n43 ms avg\n1,929 ms max\n↵\n𐘂𐘂\nRows per page: 20\nPage 1 of 1\n1",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "url": "#"
+      },
+      {
+        "text": "",
+        "url": "/app/home"
+      },
+      {
+        "text": "Clusters",
+        "url": "#/home"
+      },
+      {
+        "text": "elastic-local",
+        "url": "#/overview?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Overview",
+        "url": "#/kibana"
+      },
+      {
+        "text": "Instances",
+        "url": "#/kibana/instances"
+      },
+      {
+        "text": "e8f91c7176e3",
+        "url": "#/kibana/instances/a097ac03-bed6-4cdd-b6a2-070e46010353?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      }
+    ]
+  },
+  {
+    "route": "elasticsearch/nodes/WzQKxzO0RRK4c1XKeOwCyw",
+    "url": "http://localhost:5601/app/monitoring#/elasticsearch/nodes/WzQKxzO0RRK4c1XKeOwCyw?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))",
+    "text": "es01 - Nodes - Elasticsearch - elastic-local - Clusters - Elastic\nSkip to main content\n⌘/\n\nUse the Up and Down arrow keys to move focus over options. Press Enter to select. Press Escape to collapse options.\n\nAI Agent\nE\nD\nClusters\nelastic-local\nElasticsearch\nNodes\nes01\nEnter setup mode\nAlerts and rules\nElasticsearch node: es01\nLast 15 minutes\nRefresh\nOverview\nAdvanced\nElasticsearch node\n\nStatus\n\n Online\n\nAlerts\n\n0\n\nTransport Address\n\n10.100.4.3:9300\n\nJVM Heap\n\n39%\n\nFree Disk Space\n\n1.6 TB (91.78%)\n\nDocuments\n\n1.7k\n\nData\n\n6.2 MB\n\nIndices\n\n36\n\nShards\n\n36\n\nType\n\nNode\n\nJVM Heap (MB)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Max Heap: Total heap available to Elasticsearch running in the JVM.. Used Heap: Total heap used by Elasticsearch running in the JVM.\nMax Heap\nN/A\nUsed Heap\nN/A\nI/O Operations Rate (/s)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Total I/O: Total I/O. (This metric is not supported on all platforms and may display N/A if I/O data is unavailable.). Total Read I/O: Total Read I/O. (This metric is not supported on all platforms and may display N/A if I/O data is unavailable.). Total Write I/O: Total Write I/O. (This metric is not supported on all platforms and may display N/A if I/O data is unavailable.)\nTotal I/O\nN/A\nTotal Read I/O\nN/A\nTotal Write I/O\nN/A\nCPU Utilization (%)\nThis chart is not screen reader accessible\nInterval: 10 seconds. CPU Utilization: CPU Usage time compared to the CPU quota shown in percentage. If CPU quotas are not set, then no data will be shown.\nCPU Utilization\nN/A\nSystem Load\nThis chart is not screen reader accessible\nInterval: 10 seconds. 1m: Load average over the last minute.\n1m\nN/A\nLatency (ms)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Search: Average latency for searching, which is time it takes to execute searches divided by number of searches submitted. This considers primary and replica shards.. Indexing: Average latency for indexing documents, which is time it takes to index documents divided by number that were indexed. This considers any shard located on this node, including replicas.\nSearch\nN/A\nIndexing\nN/A\nSegment Count\nThis chart is not screen reader accessible\nInterval: 10 seconds. Segment Count: Maximum segment count for primary and replica shards on this node.\nSegment Count\nN/A\nRecent Log Entries\n\nShowing the most recent log entries for this node, up to 10 total log entries.\n\nNo log data found\n\nSet up Filebeat\n(external, opens in a new tab or window)\n, then configure your Elasticsearch output to your monitoring cluster.\n\nShard Legend\nPrimary\nReplica\nRelocating\nInitializing\nUnassigned Primary\nUnassigned Replica\nIndices\nFilter for system indices\n\n",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "url": "#"
+      },
+      {
+        "text": "",
+        "url": "/app/home"
+      },
+      {
+        "text": "Clusters",
+        "url": "#/home"
+      },
+      {
+        "text": "elastic-local",
+        "url": "#/overview?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Elasticsearch",
+        "url": "#/elasticsearch?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Nodes",
+        "url": "#/elasticsearch/nodes?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Overview",
+        "url": "#/elasticsearch/nodes/WzQKxzO0RRK4c1XKeOwCyw"
+      },
+      {
+        "text": "Advanced",
+        "url": "#/elasticsearch/nodes/WzQKxzO0RRK4c1XKeOwCyw/advanced"
+      },
+      {
+        "text": "Filebeat\n(external, opens in a new tab or window)",
+        "url": "https://www.elastic.co/docs/reference/beats/filebeat/filebeat-installation-configuration"
+      }
+    ]
+  },
+  {
+    "route": "kibana/instances/a097ac03-bed6-4cdd-b6a2-070e46010353",
+    "url": "http://localhost:5601/app/monitoring#/kibana/instances/a097ac03-bed6-4cdd-b6a2-070e46010353?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))",
+    "text": "es01 - Nodes - Elasticsearch - elastic-local - Clusters - Elastic\nSkip to main content\n⌘/\n\nUse the Up and Down arrow keys to move focus over options. Press Enter to select. Press Escape to collapse options.\n\nAI Agent\nE\nD\nClusters\nelastic-local\nKibana\nAlerts and rules\nKibana instance:\nLast 15 minutes\nRefresh\nLoading…",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "url": "#"
+      },
+      {
+        "text": "",
+        "url": "/app/home"
+      },
+      {
+        "text": "Clusters",
+        "url": "#/home?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "elastic-local",
+        "url": "#/overview?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      }
+    ]
+  },
+  {
+    "route": "elasticsearch/indices",
+    "url": "http://localhost:5601/app/monitoring#/elasticsearch/indices?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))",
+    "text": "Elasticsearch - elastic-local - Clusters - Elastic\nSkip to main content\n⌘/\n\nUse the Up and Down arrow keys to move focus over options. Press Enter to select. Press Escape to collapse options.\n\nAI Agent\nE\nD\nClusters\nelastic-local\nElasticsearch\nEnter setup mode\nAlerts and rules\nElasticsearch indices\nLast 15 minutes\nRefresh\nOverview\nNodes\nIndices\nIngest Pipelines\nElasticsearch indices\n\nStatus\n\n Green\n\nAlerts\n\n0\n\nNodes\n\n3\n\nIndices\n\n54\n\nJVM Heap\n\n983.1 MB / 1.5 GB\n\nTotal shards\n\n108\n\nUnassigned shards\n\n0\n\nDocuments\n\n1,811\n\nData\n\n12.0 MB\n\nFilter for system indices\n𐘂𐘂\n✄𐘗\n\nMonitoring data table (empty),\n\nNo items found,\n✄𐘗\nName\n↦\n\t\nAlerts\n↦\n\t\nStatus\n↦\n\t\nDocument Count\n↦\n\t\nData\n↦\n\t\nIndex Rate\n↦\n\t\nSearch Rate\n↦\n\t\nUnassigned Shards\n↵\n\n\nNo items found\n𐘂𐘂",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "url": "#"
+      },
+      {
+        "text": "",
+        "url": "/app/home"
+      },
+      {
+        "text": "Clusters",
+        "url": "#/home"
+      },
+      {
+        "text": "elastic-local",
+        "url": "#/overview?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Overview",
+        "url": "#/elasticsearch"
+      },
+      {
+        "text": "Nodes",
+        "url": "#/elasticsearch/nodes"
+      },
+      {
+        "text": "Indices",
+        "url": "#/elasticsearch/indices"
+      }
+    ]
+  },
+  {
+    "route": "index-detail",
+    "url": "http://localhost:5601/app/monitoring#/elasticsearch/indices/.monitoring-es-7-2026.11.17?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))",
+    "text": ".monitoring-es-7-2026.11.17 - Indices - Elasticsearch - elastic-local - Clusters - Elastic\nSkip to main content\n⌘/\n\nUse the Up and Down arrow keys to move focus over options. Press Enter to select. Press Escape to collapse options.\n\nAI Agent\nE\nD\nClusters\nelastic-local\nElasticsearch\nIndices\n.monitoring-es-7-2026.11.17\nEnter setup mode\nAlerts and rules\nIndex: .monitoring-es-7-2026.11.17\nLast 15 minutes\nRefresh\nOverview\nAdvanced\n\nStatus\n\nHealth:  Green\n\nAlerts\n\n0\n\nTotal\n\n2.0 MB\n\nPrimaries\n\n1022.0 KB\n\nDocuments\n\n729\n\nTotal shards\n\n2\n\nUnassigned shards\n\n0\n\nDisk (MB)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Store: Size of primary and replica shards on disk.. Store (Primaries): Size of primary shards on disk.\nStore\nN/A\nStore (Primaries)\nN/A\nSearch Rate (/s)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Total Shards: Number of search requests being executed across primary and replica shards. A single search can run against multiple shards!\nTotal Shards\nN/A\nIndexing Rate (/s)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Total Shards: Number of documents being indexed for primary and replica shards.. Primary Shards: Number of documents being indexed for primary shards.\nTotal Shards\nN/A\nPrimary Shards\nN/A\nSegment Count\nThis chart is not screen reader accessible\nInterval: 10 seconds. Total: Number of segments for primary and replica shards.. Primaries: Number of segments for primary shards.\nTotal\nN/A\nPrimaries\nN/A\nDocument Count\nThis chart is not screen reader accessible\nInterval: 10 seconds. Document Count: Total number of documents, only including primary shards.\nDocument Count\nN/A\nRecent Log Entries\n\nShowing the most recent log entries for this index, up to 10 total log entries.\n\nNo log data found\n\nSet up Filebeat\n(external, opens in a new tab or window)\n, then configure your Elasticsearch output to your monitoring cluster.\n\nShard Legend\nPrimary\nReplica\nRelocating\nInitializing\nUnassigned Primary\nUnassigned Replica\nNodes\n\nes01\n0\nes03\n0",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "url": "#"
+      },
+      {
+        "text": "",
+        "url": "/app/home"
+      },
+      {
+        "text": "Clusters",
+        "url": "#/home"
+      },
+      {
+        "text": "elastic-local",
+        "url": "#/overview?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Elasticsearch",
+        "url": "#/elasticsearch?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Indices",
+        "url": "#/elasticsearch/indices?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Overview",
+        "url": "#/elasticsearch/indices/.monitoring-es-7-2026.11.17"
+      },
+      {
+        "text": "Advanced",
+        "url": "#/elasticsearch/indices/.monitoring-es-7-2026.11.17/advanced"
+      },
+      {
+        "text": "Filebeat\n(external, opens in a new tab or window)",
+        "url": "https://www.elastic.co/docs/reference/beats/filebeat/filebeat-installation-configuration"
+      },
+      {
+        "text": "es01",
+        "url": "#/elasticsearch/nodes/WzQKxzO0RRK4c1XKeOwCyw?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "es03",
+        "url": "#/elasticsearch/nodes/FXCnEJ-NQKGrAO1CsKtpUQ?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      }
+    ]
+  },
+  {
+    "route": "ingest-pipelines",
+    "url": "http://localhost:5601/app/monitoring#/elasticsearch?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))",
+    "text": "Elasticsearch - elastic-local - Clusters - Elastic\nSkip to main content\n⌘/\n\nUse the Up and Down arrow keys to move focus over options. Press Enter to select. Press Escape to collapse options.\n\nAI Agent\nE\nD\nClusters\nelastic-local\nElasticsearch\nAlerts and rules\nElasticsearch overview\nLast 15 minutes\nRefresh\nOverview\nNodes\nIndices\nIngest Pipelines\n\nStatus\n\n Green\n\nNodes\n\n3\n\nIndices\n\n54\n\nJVM Heap\n\n942.5 MB / 1.5 GB\n\nTotal shards\n\n108\n\nUnassigned shards\n\n0\n\nDocuments\n\n2,162\n\nData\n\n11.6 MB\n\nSearch Rate (/s)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Total Shards: Number of search requests being executed across primary and replica shards. A single search can run against multiple shards!\nTotal Shards\nN/A\nSearch Latency (ms)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Search Latency: Average latency for searching, which is time it takes to execute searches divided by number of searches submitted. This considers primary and replica shards.\nSearch Latency\nN/A\nIndexing Rate (/s)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Total Shards: Number of documents being indexed for primary and replica shards.. Primary Shards: Number of documents being indexed for primary shards.\nTotal Shards\nN/A\nPrimary Shards\nN/A\nIndexing Latency (ms)\nThis chart is not screen reader accessible\nInterval: 10 seconds. Indexing Latency: Average latency for indexing documents, which is time it takes to index documents divided by number that were indexed. This only considers primary shards.\nIndexing Latency\nN/A\nRecent Log Entries\n\nShowing the most recent log entries for this cluster, up to 10 total log entries.\n\nNo log data found\n\nSet up Filebeat\n(external, opens in a new tab or window)\n, then configure your Elasticsearch output to your monitoring cluster.\n\nShard Activity\nCompleted recoveries\n𐘂𐘂\n✄𐘗\n\nMonitoring data table (empty),\n\nNo items found,\n✄𐘗\nIndex\n↦\n\t\nStage\n↦\n\t\nTotal Time\n↦\n\t\nSource / Destination\n↦\n\t\nFiles\n↦\n\t\nBytes\n↦\n\t\nTranslog\n↵\n\n\nNo items found\n𐘂𐘂",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "url": "#"
+      },
+      {
+        "text": "",
+        "url": "/app/home"
+      },
+      {
+        "text": "Clusters",
+        "url": "#/home"
+      },
+      {
+        "text": "elastic-local",
+        "url": "#/overview?_g=(cluster_uuid:nZsCS4PkR1OQwcP6gWf-Hw,refreshInterval:(pause:!t,value:10000),time:(from:now-15m,to:now))"
+      },
+      {
+        "text": "Overview",
+        "url": "#/elasticsearch"
+      },
+      {
+        "text": "Nodes",
+        "url": "#/elasticsearch/nodes"
+      },
+      {
+        "text": "Indices",
+        "url": "#/elasticsearch/indices"
+      },
+      {
+        "text": "Filebeat\n(external, opens in a new tab or window)",
+        "url": "https://www.elastic.co/docs/reference/beats/filebeat/filebeat-installation-configuration"
+      }
+    ]
+  }
+]

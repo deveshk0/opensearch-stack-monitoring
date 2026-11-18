@@ -1,0 +1,10 @@
+{
+  "name": "stackMonitoring",
+  "version": "1.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node ../../scripts/plugin_helpers build",
+    "plugin-helpers": "node ../../scripts/plugin_helpers"
+  }
+}

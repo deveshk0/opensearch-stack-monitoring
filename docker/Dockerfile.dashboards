@@ -1,0 +1,8 @@
+ARG OPENSEARCH_VERSION=3.9.0
+FROM opensearchproject/opensearch-dashboards:${OPENSEARCH_VERSION}
+COPY --chown=opensearch-dashboards:opensearch-dashboards artifacts/stack-monitoring.zip /tmp/stack-monitoring.zip
+# Production asset URLs use the distribution build number and are cached for a year.
+# Give this custom image an artifact-specific identity so plugin updates get new URLs.
+RUN bin/opensearch-dashboards-plugin install file:///tmp/stack-monitoring.zip && \
+    node/bin/node -e 'const fs = require("fs"); const crypto = require("crypto"); const pkg = JSON.parse(fs.readFileSync("package.json", "utf8")); pkg.build.number = parseInt(crypto.createHash("sha256").update(fs.readFileSync("/tmp/stack-monitoring.zip")).digest("hex").slice(0, 12), 16); fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2) + "\n");' && \
+    rm /tmp/stack-monitoring.zip

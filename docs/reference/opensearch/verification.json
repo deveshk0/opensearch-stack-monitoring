@@ -1,0 +1,42 @@
+{
+  "pages": [
+    "/clusters",
+    "/overview",
+    "/opensearch",
+    "/nodes",
+    "/nodes/Oai7oRm0R3iddWql3xO_8w",
+    "/nodes/Oai7oRm0R3iddWql3xO_8w/advanced",
+    "/indices",
+    "/indices/monitoring-demo-orders",
+    "/indices/monitoring-demo-orders/advanced",
+    "/pipelines",
+    "/pipelines/stack-monitoring-demo",
+    "/dashboards",
+    "/instances",
+    "/instances/b870a6b9-5c45-4161-ba91-ff9069db74f6",
+    "/processors/stack-monitoring-demo%2F0%2Fset%3Alabel-demo"
+  ],
+  "consoleErrors": [
+    "Forbidden"
+  ],
+  "hostPermissionErrors": [
+    "Host Data Connections probe: 403 for restricted reader"
+  ],
+  "pluginHttpErrors": [],
+  "checked": [
+    "login",
+    "tenant",
+    "routes",
+    "filter",
+    "sort",
+    "system indices",
+    "chart data table",
+    "recoveries",
+    "refresh",
+    "empty state",
+    "mobile overflow",
+    "keyboard focus",
+    "time picker",
+    "refresh start/stop"
+  ]
+}

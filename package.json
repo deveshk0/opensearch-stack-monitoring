@@ -1,0 +1,5 @@
+{
+  "name": "opensearch-stack-monitoring-workspace",
+  "private": true,
+  "scripts": {"test": "node scripts/test.cjs", "build": "bash scripts/build-plugin.sh"}
+}
