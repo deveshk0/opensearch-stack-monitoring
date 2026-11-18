@@ -317,3 +317,20 @@ test("existing templates support nested OpenSearch settings without resetting re
   await provisionResources(state.client, 0);
   assert.equal(state.indices[FIRST].settings.index.number_of_replicas, "2");
 });
+
+test("resource request diagnostics preserve status and path without exposing response details", async () => {
+  const client = {
+    transport: {
+      request: async () => {
+        throw Object.assign(new Error("secret-response"), { statusCode: 400 });
+      },
+    },
+  };
+  await assert.rejects(
+    provisionResources(client, 0),
+    (error) =>
+      error.statusCode === 400 &&
+      error.message.includes("GET /_alias/stack-monitoring-write") &&
+      !error.message.includes("secret-response"),
+  );
+});

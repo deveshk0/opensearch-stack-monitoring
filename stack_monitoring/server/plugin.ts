@@ -18,7 +18,11 @@ import { InsightStore } from "./insights";
 import { defineRoutes } from "./routes";
 import { readCollectionSetting, saveCollectionSetting } from "./collection";
 import { createHash } from "crypto";
-import { provisionResources } from "./setup_resources";
+import {
+  provisionResources,
+  ResourceRequestError,
+  ResourceValidationError,
+} from "./setup_resources";
 import {
   ManagedCredentials,
   SetupError,
@@ -241,9 +245,12 @@ export class StackMonitoringPlugin {
     // Persist before creating the account so an interrupted setup can reuse its secret.
     await saveCredentials(this.dataPath, credentials);
     this.managed = credentials;
+    let stage = "resources";
     try {
       await provisionResources(client, dataNodes > 1 ? 1 : 0);
+      stage = "collector identity";
       await ensureCollectorIdentity(client, credentials);
+      stage = "collector authentication";
       this.configureCollector(credentials);
       const account = (
         await this.client!.asInternalUser.transport.request({
@@ -258,9 +265,12 @@ export class StackMonitoringPlugin {
         throw new SetupError(
           "The generated collector did not receive exactly the scoped collector role. Check authentication and global role mappings.",
         );
+      stage = "ownership";
       await this.ownership!.acquire(cluster);
+      stage = "credential persistence";
       this.managed = { ...credentials, ready: true };
       await saveCredentials(this.dataPath, this.managed);
+      stage = "collection";
       await saveCollectionSetting(client, true, async () => {});
       await this.collector!.runOnce();
       this.collector!.start(false);
@@ -270,7 +280,7 @@ export class StackMonitoringPlugin {
       this.context.logger
         .get()
         .warn(
-          `Monitoring setup failed (HTTP ${record(error).statusCode ?? at(error, "meta.statusCode") ?? "unknown"}). Check setup privileges and monitoring resources.`,
+          `Monitoring setup failed during ${stage} (HTTP ${record(error).statusCode ?? at(error, "meta.statusCode") ?? "unknown"}). ${error instanceof ResourceRequestError || error instanceof ResourceValidationError || error instanceof SetupError ? error.message : "Check setup privileges and monitoring resources."}`,
         );
       throw error;
     }

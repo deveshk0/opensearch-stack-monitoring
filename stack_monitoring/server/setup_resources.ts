@@ -21,7 +21,9 @@ function validateMapping(
     mapping.dynamic !== desired.dynamic &&
     mapping.dynamic !== String(desired.dynamic)
   )
-    throw new Error(`Conflicting mapping for ${name}: dynamic setting`);
+    throw new ResourceValidationError(
+      `Conflicting mapping for ${name}: dynamic setting`,
+    );
   for (const [field, definition] of Object.entries(
     record(desired.properties),
   )) {
@@ -33,7 +35,9 @@ function validateMapping(
             ([key, value]) => record(current)[key] !== value,
           )
     )
-      throw new Error(`Conflicting or missing mapping for ${name}: ${field}`);
+      throw new ResourceValidationError(
+        `Conflicting or missing mapping for ${name}: ${field}`,
+      );
   }
 }
 
@@ -71,7 +75,7 @@ function validateTemplate(
         "plugins.index_state_management.rollover_alias",
       ) !== ALIAS)
   )
-    throw new Error(
+    throw new ResourceValidationError(
       `Conflicting monitoring template settings or alias: ${name}`,
     );
 }
@@ -109,7 +113,21 @@ function validatePolicy(value: unknown) {
     JSON.stringify(record(templates[0]).index_patterns) !==
       JSON.stringify([PATTERN])
   )
-    throw new Error("Conflicting monitoring retention policy");
+    throw new ResourceValidationError(
+      "Conflicting monitoring retention policy",
+    );
+}
+
+export class ResourceValidationError extends Error {}
+
+export class ResourceRequestError extends Error {
+  constructor(
+    public statusCode: number,
+    method: string,
+    path: string,
+  ) {
+    super(`Monitoring resource request ${method} ${path.split("?")[0]} failed`);
+  }
 }
 
 export async function provisionResources(
@@ -117,7 +135,7 @@ export async function provisionResources(
   replicas: number,
 ): Promise<void> {
   if (!Number.isInteger(replicas) || replicas < 0)
-    throw new Error("replicas must be a nonnegative integer");
+    throw new ResourceValidationError("replicas must be a nonnegative integer");
   const desired: typeof definitions = JSON.parse(JSON.stringify(definitions));
   desired.metrics_template.template.settings.number_of_replicas = replicas;
   desired.insights_template.template.settings.number_of_replicas = replicas;
@@ -128,11 +146,19 @@ export async function provisionResources(
     path: string,
     body?: Record<string, unknown>,
   ) => {
-    const result = await client.transport.request(
-      { method, path, ...(body === undefined ? {} : { body }) },
-      { maxRetries: 0, requestTimeout: 20000 },
-    );
-    return record(result.body);
+    try {
+      const result = await client.transport.request(
+        { method, path, ...(body === undefined ? {} : { body }) },
+        { maxRetries: 0, requestTimeout: 20000 },
+      );
+      return record(result.body);
+    } catch (error) {
+      throw new ResourceRequestError(
+        Number(status(error)) || 503,
+        method,
+        path,
+      );
+    }
   };
   const optional = async (path: string) => {
     try {
@@ -154,13 +180,13 @@ export async function provisionResources(
           (key) => key in options,
         )
       )
-        throw new Error(
+        throw new ResourceValidationError(
           "Monitoring write alias has an unexpected backing index or routing",
         );
       if (options.is_write_index === true) writers.push(name);
     }
     if (writers.length !== 1)
-      throw new Error(
+      throw new ResourceValidationError(
         "Monitoring write alias must have exactly one explicit write index",
       );
     writeIndex = writers[0];
@@ -168,7 +194,7 @@ export async function provisionResources(
     (await optional(`/${ALIAS}`)) ||
     Object.keys(await request("GET", `/${PATTERN}?expand_wildcards=all`)).length
   ) {
-    throw new Error(
+    throw new ResourceValidationError(
       "Monitoring backing indices exist without the expected write alias; repair explicitly",
     );
   }
@@ -177,7 +203,7 @@ export async function provisionResources(
     const current = await optional(`/${name}`);
     if (current) {
       if (Object.keys(current).length !== 1 || !current[name])
-        throw new Error(
+        throw new ResourceValidationError(
           `Expected a fixed monitoring index, found alias: ${name}`,
         );
       validateMapping(
@@ -204,7 +230,7 @@ export async function provisionResources(
         "plugins.index_state_management.rollover_alias",
       ) !== ALIAS
     )
-      throw new Error(
+      throw new ResourceValidationError(
         "Monitoring backing index has the wrong rollover alias setting",
       );
     const managed = await request(
@@ -212,7 +238,7 @@ export async function provisionResources(
       `/_plugins/_ism/explain/${writeIndex}`,
     );
     if (record(managed[writeIndex]).policy_id !== POLICY)
-      throw new Error(
+      throw new ResourceValidationError(
         "Monitoring write index is not managed by the expected retention policy; retry after ISM attachment settles",
       );
   }
@@ -242,7 +268,9 @@ export async function provisionResources(
       JSON.stringify(template.index_patterns) !==
       JSON.stringify(expected.index_patterns)
     )
-      throw new Error(`Conflicting monitoring template patterns: ${name}`);
+      throw new ResourceValidationError(
+        `Conflicting monitoring template patterns: ${name}`,
+      );
     validateTemplate(
       name,
       template.template,
@@ -272,7 +300,7 @@ export async function provisionResources(
         setting(at(effective, "template.settings"), "number_of_replicas"),
       ) !== String(metricsReplicas)
     )
-      throw new Error(
+      throw new ResourceValidationError(
         "Conflicting effective monitoring template replica count",
       );
   }

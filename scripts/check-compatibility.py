@@ -271,6 +271,12 @@ uiSettings.overrides.defaultRoute: /app/stackMonitoring
             require(set(os_api('/_plugins/_security/api/internalusers')[1]) == users, 'Restart created another collector account')
             print(f'PASS {version}: fresh setup, denied setup, scoped identity, history, retention, idempotency and restart', flush=True)
         finally:
+            if sys.exc_info()[0] is not None:
+                logs = docker('logs', '--tail', '100', dashboards, check=False)
+                for line in logs.splitlines():
+                    match = re.search(r'Monitoring setup failed[^\n]*', line)
+                    if match:
+                        print('Setup diagnostic: ' + match.group(0), file=sys.stderr)
             for container in [dashboards, node]:
                 docker('rm', '-f', container, check=False)
             docker('network', 'rm', prefix, check=False)

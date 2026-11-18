@@ -22,9 +22,13 @@ let stage = "launch";
     page.setDefaultTimeout(30000);
     const errors = [];
     let configured = false;
-    page.on("pageerror", () => errors.push("page runtime error"));
+    let authenticated = false;
+    page.on("pageerror", () => {
+      if (authenticated) errors.push("page runtime error");
+    });
     page.on("console", (message) => {
       if (
+        authenticated &&
         message.type() === "error" &&
         !message.text().includes("Failed to load resource")
       )
@@ -49,9 +53,14 @@ let stage = "launch";
     const confirm = page.getByRole("button", { name: "Confirm", exact: true });
     if (await confirm.isVisible()) await confirm.click();
     stage = "open_setup";
-    await page
-      .getByRole("button", { name: "Set up monitoring", exact: true })
-      .click();
+    const setupEntry = page.getByRole("button", {
+      name: "Set up monitoring",
+      exact: true,
+    });
+    await setupEntry.waitFor();
+    // Security Dashboards can emit Unauthorized errors while its login page loads.
+    authenticated = true;
+    await setupEntry.click();
     const setup = page
       .locator(".sm-collection-settings")
       .getByRole("button", { name: "Set up monitoring", exact: true });
