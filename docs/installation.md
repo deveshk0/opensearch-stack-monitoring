@@ -33,7 +33,7 @@ Run this from the download directory and continue only when the selected ZIP rep
 Stop Dashboards, preserve its configuration and data directory, and use its plugin installer as the installation owner:
 
 ```sh
-bin/opensearch-dashboards-plugin install file:///absolute/path/stack-monitoring-3.9.0.zip
+bin/opensearch-dashboards-plugin install file:///absolute/path/stack-monitoring-3.9.0.zip --single-version strict
 ```
 
 Use the filename for your host. Package installations and Docker images have different service-management steps; see the [README](../README.md#2-install-and-restart-dashboards). Docker builds require copying the verified versioned archive to `artifacts/stack-monitoring.zip` and selecting the same `OPENSEARCH_VERSION` build argument. Restart Dashboards before opening setup.

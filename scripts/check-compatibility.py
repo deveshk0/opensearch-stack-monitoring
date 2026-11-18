@@ -267,6 +267,8 @@ uiSettings.overrides.defaultRoute: /app/stackMonitoring
             print(f'{version}: restarting Dashboards with its protected data volume', flush=True)
             last = sample()['snapshot']['timestamp']
             docker('restart', dashboards)
+            # Docker can allocate a different ephemeral host port after restart.
+            dash_url = endpoint(dashboards, 5601, 'http')
             after = wait_for('fresh collection after restart', lambda: sample(last), 300)
             require(after['collection']['last_success'] > last, 'Collector did not resume after restart')
             restored = json.loads(docker('exec', '-i', dashboards, 'node/bin/node', '-', input_text=CREDENTIAL_CHECK))
