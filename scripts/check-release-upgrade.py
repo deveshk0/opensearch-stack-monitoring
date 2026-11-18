@@ -5,6 +5,8 @@
 Docker resources; PLAYWRIGHT_MODULE enables cached-browser upgrade checks.
 """
 import datetime
+import base64
+import re
 import hashlib
 import json
 import os
@@ -91,12 +93,11 @@ def cleanup_fixture(containers, network, volumes, images):
     require(not remaining, 'Fixture cleanup incomplete: ' + ', '.join(remaining))
 
 
-def browser_failure(process, stderr):
-    detail = next((line for line in stderr.splitlines() if line.startswith('FAIL: browser stage ')), '')
-    if not detail:
-        detail = next((marker for marker in ['FATAL ERROR', 'heap out of memory', 'TargetClosedError', 'node:internal', 'Error:']
-                       if marker in stderr), 'no stage reported')
-    return f'exit {process.returncode}; {detail}'
+def browser_failure(process, stderr, password):
+    redacted = stderr.replace(password, '[redacted]').replace(
+        base64.b64encode(('admin:' + password).encode()).decode(), '[redacted]')
+    redacted = re.sub(r'(?im)^.*(?:authorization|cookie|set-cookie)["\']?\s*:.*$', '[redacted header]', redacted)
+    return f'exit {process.returncode}; ' + redacted.strip()[:2500]
 
 
 def main():
@@ -292,7 +293,7 @@ stackMonitoring.collection.resolvedRetentionDays: 17
                         def browser_ready():
                             if browser.poll() is not None:
                                 _, stderr = browser.communicate()
-                                raise RuntimeError('Browser could not warm the installed release: ' + browser_failure(browser, stderr))
+                                raise RuntimeError('Browser could not warm the installed release: ' + browser_failure(browser, stderr, admin))
                             return ready.exists()
                         wait_for('cached browser baseline', browser_ready, 90)
                     docker('stop', '--time', '60', dashboards)
@@ -310,7 +311,7 @@ stackMonitoring.collection.resolvedRetentionDays: 17
                     preserved(enabled)
                     if browser:
                         stdout, stderr = browser.communicate(timeout=150)
-                        require(browser.returncode == 0, 'Cached-browser reload failed: ' + browser_failure(browser, stderr))
+                        require(browser.returncode == 0, 'Cached-browser reload failed: ' + browser_failure(browser, stderr, admin))
                         browser = None
                     checks.append(label)
                     print('PASS: ' + label + '; retained history/insight, settings, identity and permissions'

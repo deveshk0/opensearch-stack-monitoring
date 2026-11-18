@@ -1,5 +1,7 @@
 """Reject wrong or corrupted public release inputs before Docker is touched."""
 import hashlib
+import base64
+from types import SimpleNamespace
 import json
 from pathlib import Path
 import runpy
@@ -104,6 +106,17 @@ class UpgradeCleanupTests(unittest.TestCase):
             return ''
         with self.assertRaises(RuntimeError):
             self.clean(fake)
+
+
+class UpgradeDiagnosticsTests(unittest.TestCase):
+    def test_browser_error_keeps_cause_but_redacts_credentials(self):
+        secret = 'fixture-secret'
+        encoded = base64.b64encode(('admin:' + secret).encode()).decode()
+        message = 'TimeoutError: filling ' + secret + '\nAuthorization: Basic ' + encoded + '\nCookie: session-token\n'
+        result = upgrade['browser_failure'](SimpleNamespace(returncode=1), message, secret)
+        self.assertIn('TimeoutError', result)
+        for value in [secret, encoded, 'session-token']:
+            self.assertNotIn(value, result)
 
 
 if __name__ == '__main__':

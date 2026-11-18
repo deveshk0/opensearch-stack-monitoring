@@ -76,7 +76,11 @@ let stage = "launch";
   } finally {
     await browser.close();
   }
-})().catch(() => {
+})().catch((error) => {
   console.error(`FAIL: browser stage ${stage}`);
+  console.error(String(error?.stack || error)
+    .split(config.password).join("[redacted]")
+    .split(Buffer.from("admin:" + config.password).toString("base64")).join("[redacted]")
+    .replace(/^.*(?:authorization|cookie|set-cookie)["']?\s*:.*$/gim, "[redacted header]"));
   process.exitCode = 1;
 });
