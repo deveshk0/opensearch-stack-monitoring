@@ -17,7 +17,7 @@ The plugin has been built and exercised on matching OpenSearch/OpenSearch Dashbo
 | Check | Result |
 | --- | --- |
 | JavaScript/TypeScript regression suite | 140 passing tests, including isolated UI and setup lifecycle tests, against each pinned host |
-| Provisioning, secure-client, release, upgrade-fixture and toolchain tests | 50 passing Python tests |
+| Provisioning, secure-client, release, upgrade-fixture and toolchain tests | 51 passing Python tests |
 | Official host TypeScript check and plugin build | Passed for all four exact host targets; ZIP manifest, LICENSE and NOTICE validated |
 | Fresh secured single-node fixtures | All four versions passed browser setup, chart/table rendering, stored samples, denied setup, scoped credentials, private file permissions, ISM attachment, idempotency and restart; 3.7 also proved wildcard-role rejection before fixture-only correction |
 | Local three-node live APIs | Passed health, real rates, entity history, invalid query handling, reader/denied authorization and collector isolation |

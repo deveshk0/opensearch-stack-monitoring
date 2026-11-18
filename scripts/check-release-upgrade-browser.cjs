@@ -11,7 +11,8 @@ let stage = "launch";
     page = await context.newPage();
     page.setDefaultTimeout(60000);
     const confirm = page.getByRole("button", { name: "Confirm", exact: true });
-    await page.addLocatorHandler(confirm, async () => { await confirm.click(); });
+    // The app readiness check owns navigation; the tenant handler only clicks.
+    await page.addLocatorHandler(confirm, async () => { await confirm.click({ noWaitAfter: true }); });
     async function open(reload) {
       const phase = reload ? "reload" : "baseline";
       stage = phase + "_navigation";
@@ -20,7 +21,7 @@ let stage = "launch";
         new URLSearchParams({ from: config.from, to: config.to, paused: "true" }));
       stage = phase + "_login";
       const username = page.getByPlaceholder("Username", { exact: true });
-      await Promise.race([username.waitFor(), page.locator(".sm-app").waitFor()]);
+      await username.or(confirm).or(page.locator(".sm-app")).first().waitFor();
       if (await username.isVisible()) {
         await username.fill("admin");
         const password = page.getByPlaceholder("Password", { exact: true });
@@ -29,6 +30,9 @@ let stage = "launch";
       }
       stage = phase + "_app";
       await page.locator(".sm-app").waitFor();
+      // Tenant/login redirects can replace the originally requested hash.
+      await page.evaluate((hash) => { location.hash = hash; }, "#/opensearch?" +
+        new URLSearchParams({ from: config.from, to: config.to, paused: "true" }));
       stage = phase + "_tab";
       await page.getByRole("tab", { name: "OpenSearch", exact: true }).click();
       stage = phase + "_canvas";
