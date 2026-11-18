@@ -215,6 +215,9 @@ uiSettings.overrides.defaultRoute: /app/stackMonitoring
                 if browser.returncode:
                     stages = re.findall(r'^FAIL: browser stage ([a-z_]+)$', browser.stderr, re.MULTILINE)
                     stage = stages[-1] if stages else 'launch_or_timeout'
+                    causes = re.findall(r'^Browser diagnostic: ([a-z_]+)$', browser.stderr, re.MULTILINE)
+                    if causes:
+                        print(f'Browser diagnostic: {causes[-1]}', flush=True)
                     raise RuntimeError(f'Browser first-run setup failed at {stage}; credential-bearing diagnostics withheld')
                 print(f'{version}: browser setup and populated charts passed', flush=True)
             else:

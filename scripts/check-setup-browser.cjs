@@ -49,9 +49,10 @@ let stage = "launch";
       .getByPlaceholder("Password", { exact: true })
       .fill(config.password);
     await page.getByPlaceholder("Password", { exact: true }).press("Enter");
-    await page.locator(".sm-app").waitFor({ timeout: 60000 });
+    // The host tenant dialog can appear after the monitoring app has rendered.
     const confirm = page.getByRole("button", { name: "Confirm", exact: true });
-    if (await confirm.isVisible()) await confirm.click();
+    await page.addLocatorHandler(confirm, async () => { await confirm.click(); });
+    await page.locator(".sm-app").waitFor({ timeout: 60000 });
     stage = "open_setup";
     const setupEntry = page.getByRole("button", {
       name: "Set up monitoring",
@@ -60,6 +61,7 @@ let stage = "launch";
     await setupEntry.waitFor();
     // Security Dashboards can emit Unauthorized errors while its login page loads.
     authenticated = true;
+    stage = "click_setup";
     await setupEntry.click();
     const setup = page
       .locator(".sm-collection-settings")
@@ -133,7 +135,12 @@ let stage = "launch";
   } finally {
     await browser.close();
   }
-})().catch(() => {
+})().catch((error) => {
+  const message = String(error?.message || "");
+  const cause = message.includes("intercepts pointer events") ? "overlay" :
+    message.includes("strict mode violation") ? "ambiguous_locator" :
+    message.includes("Timeout") ? "timeout" : "assertion_or_runtime";
+  console.error(`Browser diagnostic: ${cause}`);
   console.error(`FAIL: browser stage ${stage}`);
   process.exitCode = 1;
 });
