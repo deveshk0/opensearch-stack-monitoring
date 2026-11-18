@@ -14,7 +14,7 @@ node .cache/OpenSearch-Dashboards/node_modules/typescript/bin/tsc \
 
 Bootstrap checks the exact official commit and Node archive checksum. Unit tests use the host's installed dependencies. The isolated UI tests exercise React effects with controlled HTTP responses; they do not log in to a real cluster. The build uses the official plugin helpers and checks that the ZIP includes the repository LICENSE and NOTICE.
 
-[CI](.github/workflows/ci.yml) runs those checks on Ubuntu 24.04. Its cache is tied to the exact host/toolchain pins and contains dependency downloads, not a prior plugin build. A workflow definition is not evidence that a Linux run has passed; inspect the run for the revision being released.
+[CI](.github/workflows/ci.yml) runs those checks on Ubuntu 24.04. Its cache is tied to the exact host/toolchain pins and contains dependency downloads, not a prior plugin build. The release job requires those checks to pass for the revision being published.
 
 Live scripts in `scripts/check-*.py` and `scripts/check-*.cjs` have different effects. Some change self-monitoring or themes, restart Dashboards, create test indices, or remove test findings. Read the script first and run it only against an authorized disposable installation. Existing results in [verification](docs/verification.md) are historical evidence, not verification of a new commit.
 
@@ -45,4 +45,19 @@ docs: explain monitoring index retention
 ci: verify the plugin on Linux
 ```
 
-Use an imperative summary. Mark breaking changes with `!` after the type/scope and explain the migration in a `BREAKING CHANGE:` footer. Commit types alone do not trigger automated releases.
+Use an imperative summary. Mark breaking changes with `!` after the type/scope and explain the migration in a `BREAKING CHANGE:` footer.
+
+
+## Releases
+
+Pushes and merges to `main` publish a release after the Linux checks succeed. Pull requests and other branches only run checks. The first release is `v1.0.0`; subsequent versions use all commit messages since the previous release:
+
+- A `BREAKING CHANGE:` / `BREAKING-CHANGE:` footer or `type!:` / `type(scope)!:` header increments the major version.
+- A `feat:` / `feat(scope):` header increments the minor version.
+- Other changes, including documentation and CI, increment the patch version.
+
+The largest change wins. For squash merges, put the semantic summary in the PR title and preserve breaking-change footers in the final commit message.
+
+The release job downloads the checked Linux artifact, stamps its two package metadata files with the release version, preserves host compatibility and compiled code, and publishes `stack-monitoring.zip` plus `SHA256SUMS`. Source metadata remains the development baseline; the installed ZIP records the release version. No version-bump commit or personal access token is needed. Only the release job has repository write permission.
+
+Releases target the exact checked commit. A rerun leaves an already published release unchanged and can finish an interrupted draft for the same commit. If a draft upload fails, rerun its failed job before releasing a later commit. If `main` still points to the failed commit, **Actions → Plugin checks → Run workflow → main** also retries publication; otherwise rerun the original failed job. Main runs are not interrupted by newer pushes; GitHub can replace pending runs during a burst, so changes can be grouped into the next successful release. An older run cannot publish after a newer tagged release.

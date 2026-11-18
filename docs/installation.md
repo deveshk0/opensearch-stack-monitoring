@@ -2,7 +2,19 @@
 
 The supported scope is one attached OpenSearch cluster and one collecting OpenSearch Dashboards **3.9.0** instance. Other Dashboards instances may serve the UI with collection disabled. This is not an HA collector, a remote-cluster service, or a substitute for independent outage monitoring. Capacity, failure recovery, and your security configuration require validation in your environment.
 
-## Build and install
+## Install a release
+
+Download `stack-monitoring.zip` and `SHA256SUMS` from a [GitHub release](https://github.com/deveshk0/opensearch-stack-monitoring/releases). Use a specific tag for repeatable deployments, and verify before installation:
+
+```sh
+shasum -a 256 -c SHA256SUMS
+```
+
+The published ZIP is built and checked on Linux for **OpenSearch Dashboards 3.9.0**. A plugin version such as `1.1.0` does not change that host requirement. Download the source archive for the same release (or check out its tag) to obtain the matching `scripts/provision-monitoring.py` and supporting files.
+
+Continue with the installer below, then provision storage/roles and configure the collecting host before restarting Dashboards.
+
+### Build from source (optional)
 
 Use Node 22.23.0 and the exact host checkout selected by `scripts/bootstrap.sh`:
 
@@ -11,7 +23,7 @@ bash scripts/bootstrap.sh
 bash scripts/build-plugin.sh
 ```
 
-The result is `artifacts/stack-monitoring.zip`. Stop the target Dashboards process, retain its configuration and data directory, and use its plugin installer:
+The source build produces `artifacts/stack-monitoring.zip`. For either a release download or source build, stop the target Dashboards process, retain its configuration and data directory, and use its plugin installer:
 
 ```sh
 bin/opensearch-dashboards-plugin install file:///absolute/path/stack-monitoring.zip

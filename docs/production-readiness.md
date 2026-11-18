@@ -34,7 +34,7 @@ The synthetic processing check (`node scripts/benchmark-monitoring.cjs`, after `
 
 ## Remaining deployment limits
 
-- Only OpenSearch Dashboards 3.9.0 has been validated. The CI workflow is committed but has not run on GitHub; Linux runtime tests reuse the installed dependency tree and are not a clean Linux dependency/bootstrap build.
+- Only OpenSearch Dashboards 3.9.0 has been validated. A [clean Linux bootstrap, test, build, and type-check run](https://github.com/deveshk0/opensearch-stack-monitoring/actions/runs/44307253246) passed on GitHub for commit `382b7f4`. Each automated release requires those checks again for its own revision. CI does not start a live cluster.
 - The supplied local Compose deployment uses demo certificates and HTTP browser access. Use verified TLS, protected credentials, appropriate backups and your deployment's access controls in production.
 - Only one collector is supported. Persist its unique Dashboards UUID; never clone that data directory into another active collector. A lost owner may require manual recovery after the old process is stopped.
 - Self-monitoring cannot independently report a total outage of its own cluster or Dashboards process. Rates are sampled estimates; endpoint response-time variation can affect them.
