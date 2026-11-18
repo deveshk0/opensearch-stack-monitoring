@@ -5,6 +5,7 @@ from pathlib import Path
 import runpy
 import tempfile
 import unittest
+from unittest.mock import patch
 import zipfile
 
 upgrade = runpy.run_path(str(Path(__file__).with_name('check-release-upgrade.py')))
@@ -75,6 +76,34 @@ class UpgradePreservationTests(unittest.TestCase):
         self.assertTrue(upgrade['fresh_history'](sample, 100))
         sample['snapshot']['timestamp'] = 100
         self.assertFalse(upgrade['fresh_history'](sample, 100))
+
+
+class UpgradeCleanupTests(unittest.TestCase):
+    def clean(self, fake):
+        cleanup = upgrade['cleanup_fixture']
+        with patch.dict(cleanup.__globals__, {'docker': fake}):
+            cleanup(['fixture-os', 'fixture-dash'], 'fixture-network', ['fixture-data'], ['fixture:old', 'fixture:new'])
+
+    def test_cleanup_attempts_every_owned_resource_and_accepts_absence(self):
+        calls = []
+        self.clean(lambda *args, **kwargs: calls.append(args) or '')
+        self.assertEqual(len([args for args in calls if 'rm' in args]), 6)
+        self.assertFalse(any('prune' in args for args in calls))
+
+    def test_remaining_owned_resource_fails_without_reporting_unrelated_names(self):
+        def fake(*args, **kwargs):
+            return 'fixture-dash\nunrelated-private-name' if args[:2] == ('container', 'ls') else ''
+        with self.assertRaisesRegex(RuntimeError, 'fixture-dash') as error:
+            self.clean(fake)
+        self.assertNotIn('unrelated-private-name', str(error.exception))
+
+    def test_unavailable_docker_does_not_claim_success(self):
+        def fake(*args, **kwargs):
+            if 'ls' in args:
+                raise RuntimeError('Cannot confirm cleanup')
+            return ''
+        with self.assertRaises(RuntimeError):
+            self.clean(fake)
 
 
 if __name__ == '__main__':

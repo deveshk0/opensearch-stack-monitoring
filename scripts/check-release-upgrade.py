@@ -72,6 +72,33 @@ def fresh_history(body, after):
                 and (body['collection'].get('last_success') or 0) > after)
 
 
+def cleanup_fixture(containers, network, volumes, images):
+    for container in containers:
+        docker('rm', '-f', container, check=False)
+    docker('network', 'rm', network, check=False)
+    for volume in volumes:
+        docker('volume', 'rm', volume, check=False)
+    for image in images:
+        docker('image', 'rm', image, check=False)
+    remaining = []
+    for kind, names, template in [
+        ('container', containers, '{{.Names}}'), ('network', [network], '{{.Name}}'),
+        ('volume', volumes, '{{.Name}}'), ('image', images, '{{.Repository}}:{{.Tag}}'),
+    ]:
+        options = ['-a'] if kind == 'container' else []
+        present = set(docker(kind, 'ls', *options, '--format', template).splitlines())
+        remaining.extend(sorted(set(names) & present))
+    require(not remaining, 'Fixture cleanup incomplete: ' + ', '.join(remaining))
+
+
+def browser_failure(process, stderr):
+    detail = next((line for line in stderr.splitlines() if line.startswith('FAIL: browser stage ')), '')
+    if not detail:
+        detail = next((marker for marker in ['FATAL ERROR', 'heap out of memory', 'TargetClosedError', 'node:internal', 'Error:']
+                       if marker in stderr), 'no stage reported')
+    return f'exit {process.returncode}; {detail}'
+
+
 def main():
     require(sys.argv[1:] in ([], ['--check']), 'Only --check is supported')
     archives = download_releases()
@@ -259,14 +286,13 @@ stackMonitoring.collection.resolvedRetentionDays: 17
                             browser_config.unlink()
                         ready = temporary / 'browser-ready'
                         ready.unlink(missing_ok=True)
-                        private_file(browser_config, json.dumps({'base': dash_url, 'password': admin, 'ready': str(ready)}))
+                        private_file(browser_config, json.dumps({'base': dash_url, 'password': admin, 'ready': str(ready), **fixed_range}))
                         browser = subprocess.Popen([os.environ.get('NODE_BINARY', 'node'), str(ROOT / 'scripts/check-release-upgrade-browser.cjs')],
                             env={**os.environ, 'UPGRADE_BROWSER_CONFIG': str(browser_config)}, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                         def browser_ready():
                             if browser.poll() is not None:
                                 _, stderr = browser.communicate()
-                                stage = next((line for line in stderr.splitlines() if line.startswith('FAIL: browser stage ')), 'details withheld')
-                                raise RuntimeError('Browser could not warm the installed release: ' + stage)
+                                raise RuntimeError('Browser could not warm the installed release: ' + browser_failure(browser, stderr))
                             return ready.exists()
                         wait_for('cached browser baseline', browser_ready, 90)
                     docker('stop', '--time', '60', dashboards)
@@ -284,7 +310,7 @@ stackMonitoring.collection.resolvedRetentionDays: 17
                     preserved(enabled)
                     if browser:
                         stdout, stderr = browser.communicate(timeout=150)
-                        require(browser.returncode == 0, 'Cached-browser reload failed: ' + next((line for line in stderr.splitlines() if line.startswith('FAIL: browser stage ')), 'details withheld'))
+                        require(browser.returncode == 0, 'Cached-browser reload failed: ' + browser_failure(browser, stderr))
                         browser = None
                     checks.append(label)
                     print('PASS: ' + label + '; retained history/insight, settings, identity and permissions'
@@ -302,13 +328,8 @@ stackMonitoring.collection.resolvedRetentionDays: 17
                 except subprocess.TimeoutExpired:
                     browser.kill()
                     browser.wait()
-            for container in [dashboards, node]:
-                docker('rm', '-f', container, check=False)
-            docker('network', 'rm', prefix, check=False)
-            for volume in volumes:
-                docker('volume', 'rm', volume, check=False)
-            for image in images.values():
-                docker('image', 'rm', image, check=False)
+            cleanup_fixture([dashboards, node], prefix, volumes, list(images.values()))
+            print('PASS: disposable containers, network, volumes and images removed', flush=True)
 
 
 if __name__ == '__main__':

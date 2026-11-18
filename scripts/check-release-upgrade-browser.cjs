@@ -5,9 +5,10 @@ const config = JSON.parse(fs.readFileSync(process.env.UPGRADE_BROWSER_CONFIG, "u
 let stage = "launch";
 (async () => {
   const browser = await chromium.launch({ channel: "chrome", headless: true, args: ["--no-sandbox"] });
+  let page;
   try {
     const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-    const page = await context.newPage();
+    page = await context.newPage();
     page.setDefaultTimeout(60000);
     const confirm = page.getByRole("button", { name: "Confirm", exact: true });
     await page.addLocatorHandler(confirm, async () => { await confirm.click(); });
@@ -15,7 +16,8 @@ let stage = "launch";
       const phase = reload ? "reload" : "baseline";
       stage = phase + "_navigation";
       if (reload) await page.reload();
-      else await page.goto(config.base + "/app/stackMonitoring#/opensearch?from=now-15m&to=now&paused=true");
+      else await page.goto(config.base + "/app/stackMonitoring#/opensearch?" +
+        new URLSearchParams({ from: config.from, to: config.to, paused: "true" }));
       stage = phase + "_login";
       const username = page.getByPlaceholder("Username", { exact: true });
       await Promise.race([username.waitFor(), page.locator(".sm-app").waitFor()]);
@@ -68,6 +70,9 @@ let stage = "launch";
     assert.ok(asset && asset !== originalAsset, "Cached browser reused the previous plugin chunk");
     assert.equal(new URL(asset).pathname.split("/")[1], newBuild);
     console.log("PASS: cached-browser reload loaded the replacement plugin, chart and data table");
+  } catch (error) {
+    if (page) await page.screenshot({ path: ".cache/release-upgrade-browser-failure.png", fullPage: true, timeout: 5000 }).catch(() => {});
+    throw error;
   } finally {
     await browser.close();
   }

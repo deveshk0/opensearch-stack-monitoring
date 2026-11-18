@@ -49,3 +49,10 @@ jobs:
           name: release-upgrade-results
           path: .cache/release-upgrade-results.json
           if-no-files-found: error
+      - name: Upload browser failure screenshot
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-upgrade-browser-failure
+          path: .cache/release-upgrade-browser-failure.png
+          if-no-files-found: ignore
