@@ -205,6 +205,19 @@ uiSettings.overrides.defaultRoute: /app/stackMonitoring
                 require(os_api(path)[0] == 404, 'Denied setup created a managed resource')
             require(set(os_api('/_plugins/_security/api/internalusers')[1]) == initial_users, 'Denied setup created an account')
             docker('exec', dashboards, 'test', '!', '-e', '/usr/share/opensearch-dashboards/data/stack-monitoring/collector.json')
+            if version == '3.7.0':
+                # This release's demo configuration grants own_index to every user.
+                code, mapping = os_api('/_plugins/_security/api/rolesmapping/own_index')
+                require(code == 200 and mapping['own_index']['users'] == ['*'], 'Expected the 3.7 demo wildcard mapping')
+                code, _ = dash_api('/api/stack_monitoring/setup', 'POST', {})
+                require(code == 409, 'Setup accepted an overprivileged generated collector')
+                code, state = dash_api('/api/stack_monitoring/setup')
+                require(code == 200 and not state['configured'] and state['last_success'] is None, 'Rejected collector started collecting')
+                pending = json.loads(docker('exec', '-i', dashboards, 'node/bin/node', '-', input_text=CREDENTIAL_CHECK))
+                require(not pending['ready'] and 'own_index' in pending['roles'], 'Expected a pending identity with the demo role')
+                # Only this disposable cluster is changed; deployment mappings belong to its administrator.
+                require(os_api('/_plugins/_security/api/rolesmapping/own_index', 'DELETE')[0] == 200, 'Could not remove fixture demo wildcard mapping')
+                print(f'{version}: rejected wildcard-granted role; retrying after fixture-only mapping correction', flush=True)
             print(f'{version}: provisioning through ' + ('browser login and setup button' if os.environ.get('PLAYWRIGHT_MODULE') else 'administrator API'), flush=True)
             if os.environ.get('PLAYWRIGHT_MODULE'):
                 browser_config = temporary / 'browser.json'

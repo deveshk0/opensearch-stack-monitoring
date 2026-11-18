@@ -17,6 +17,14 @@ A plugin release number (for example, `v1.1.0`) is separate from its Dashboards 
 
 These are the configured build targets, not a claim that all runtime checks have completed. Consult the selected release's validation notes before deployment. Other host versions are not covered. The generic `stack-monitoring.zip` is an alias of the **3.9.0** archive only.
 
+### OpenSearch 3.7 demo Security configuration
+
+The [3.7 demo mapping](https://github.com/opensearch-project/security/blob/3.7.0.0/config/roles_mapping.yml) grants `own_index` to every user with `users: ["*"]`. That includes a newly generated collector, so automatic setup deliberately refuses to start it. The [3.8 demo mapping](https://github.com/opensearch-project/security/blob/3.8.0.0/config/roles_mapping.yml) removed this default.
+
+Before setup on a cluster retaining that mapping, have its Security administrator replace the wildcard with explicit users or groups that need `own_index`, preserving their intended access. Check other wildcard mappings too: the generated collector must receive only `stack_monitoring_collector`. The plugin does not change global role mappings. After correcting the mapping, retry setup; it reuses the pending identity. This prerequisite applies to the deployment's Security configuration, including clusters upgraded from 3.7.
+
+CI checks that the unmodified 3.7 demo mapping is rejected, then removes it **only in its disposable fixture** before checking successful setup and restart.
+
 ## Install a release
 
 Download the matching ZIP and `SHA256SUMS` from an available [GitHub release](https://github.com/deveshk0/opensearch-stack-monitoring/releases). The [README commands](../README.md#1-download-and-verify) use `release_tag=v1.1.0` as the new feature release example; select a published tag. Verify only the selected ZIP, because the checksum manifest contains all host builds:

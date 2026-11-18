@@ -41,7 +41,7 @@ For a new local cluster, use [Try it locally](#try-it-locally). Install the ZIP 
 | --- | --- |
 | Host version | Download the ZIP matching the exact Dashboards version; see [compatibility](docs/installation.md#compatibility) |
 | Collection | One attached cluster, one collecting Dashboards instance |
-| OpenSearch plugins | Security and Index Management enabled |
+| OpenSearch plugins | Security and Index Management enabled; [3.7 demo mappings need an administrator adjustment](docs/installation.md#opensearch-37-demo-security-configuration) |
 | Setup identity | A signed-in Security administrator authorized to create monitoring resources, roles, and internal users |
 | Dashboards storage | Writable, persistent `path.data`; use [manual setup](#manual-setup) for externally managed credentials or read-only data storage |
 | Connectivity | Existing verified OpenSearch TLS and authentication; keep your secured Dashboards configuration |
