@@ -12,8 +12,11 @@ let stage = "launch";
     const confirm = page.getByRole("button", { name: "Confirm", exact: true });
     await page.addLocatorHandler(confirm, async () => { await confirm.click(); });
     async function open(reload) {
+      const phase = reload ? "reload" : "baseline";
+      stage = phase + "_navigation";
       if (reload) await page.reload();
       else await page.goto(config.base + "/app/stackMonitoring#/opensearch?from=now-15m&to=now&paused=true");
+      stage = phase + "_login";
       const username = page.getByPlaceholder("Username", { exact: true });
       await Promise.race([username.waitFor(), page.locator(".sm-app").waitFor()]);
       if (await username.isVisible()) {
@@ -22,10 +25,15 @@ let stage = "launch";
         await password.fill(config.password);
         await password.press("Enter");
       }
+      stage = phase + "_app";
       await page.locator(".sm-app").waitFor();
+      stage = phase + "_tab";
       await page.getByRole("tab", { name: "OpenSearch", exact: true }).click();
+      stage = phase + "_canvas";
       await page.locator(".sm-chart-canvas canvas").first().waitFor();
+      stage = phase + "_control";
       await page.getByRole("button", { name: "Self-monitoring", exact: true }).waitFor();
+      stage = phase + "_table";
       const chart = page.locator(".sm-chart").filter({ has: page.locator(".sm-chart-canvas") }).first();
       const title = await chart.locator("h3").innerText();
       await chart.getByRole("button", { name: /^View data for / }).click();

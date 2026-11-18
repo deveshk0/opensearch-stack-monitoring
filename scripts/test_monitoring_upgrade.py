@@ -7,7 +7,8 @@ import tempfile
 import unittest
 import zipfile
 
-verify = runpy.run_path(str(Path(__file__).with_name('check-release-upgrade.py')))['verify_release']
+upgrade = runpy.run_path(str(Path(__file__).with_name('check-release-upgrade.py')))
+verify = upgrade['verify_release']
 
 
 class UpgradeArchiveTests(unittest.TestCase):
@@ -49,6 +50,31 @@ class UpgradeArchiveTests(unittest.TestCase):
         self.archive(version='1.1.0')
         with self.assertRaises(RuntimeError):
             verify(self.path, self.checksum, 'v1.0.1')
+
+
+class UpgradePreservationTests(unittest.TestCase):
+    def test_samples_written_by_new_release_must_survive_rollback(self):
+        source = {'old': {'timestamp': 1}, 'new': {'timestamp': 2}}
+        with self.assertRaises(RuntimeError):
+            upgrade['assert_retained'](source, {'old': source['old']}, True)
+
+    def test_disabled_collection_requires_identical_documents(self):
+        with self.assertRaises(RuntimeError):
+            upgrade['assert_retained']({'old': 1}, {'old': 1, 'unexpected': 2}, False)
+        upgrade['assert_retained']({'old': 1}, {'old': 1}, False)
+        upgrade['assert_retained']({'old': 1}, {'old': 1, 'new': 2}, True)
+
+    def test_modified_retained_sample_is_rejected(self):
+        with self.assertRaises(RuntimeError):
+            upgrade['assert_retained']({'old': {'value': 1}}, {'old': {'value': 2}}, True)
+
+    def test_target_success_and_visible_sample_must_both_follow_stopped_source(self):
+        sample = {'snapshot': {'timestamp': 101}, 'collection': {'last_success': 99}}
+        self.assertFalse(upgrade['fresh_history'](sample, 100))
+        sample['collection']['last_success'] = 101
+        self.assertTrue(upgrade['fresh_history'](sample, 100))
+        sample['snapshot']['timestamp'] = 100
+        self.assertFalse(upgrade['fresh_history'](sample, 100))
 
 
 if __name__ == '__main__':

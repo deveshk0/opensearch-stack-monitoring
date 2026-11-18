@@ -60,6 +60,18 @@ def download_releases():
     return result
 
 
+def assert_retained(expected, actual, enabled):
+    require(all(key in actual and actual[key] == value for key, value in expected.items()),
+            'Retained monitoring documents changed or disappeared')
+    if not enabled:
+        require(actual == expected, 'Disabled collection changed the stored documents')
+
+
+def fresh_history(body, after):
+    return bool(body and body.get('snapshot') and body['snapshot']['timestamp'] > after
+                and (body['collection'].get('last_success') or 0) > after)
+
+
 def main():
     require(sys.argv[1:] in ([], ['--check']), 'Only --check is supported')
     archives = download_releases()
@@ -159,9 +171,7 @@ stackMonitoring.collection.resolvedRetentionDays: 17
                 require(metadata['version'] == tag[1:] and metadata['opensearchDashboardsVersion'] == HOST, 'Installed release identity mismatch')
             def history(after=0):
                 code, body = dash_api('/api/stack_monitoring/history')
-                if code != 200 or not body.get('snapshot'):
-                    return None
-                return body if body['snapshot']['timestamp'] > after and body['collection']['last_success'] else None
+                return body if code == 200 and fresh_history(body, after) else None
             def toggle(enabled):
                 code, body = dash_api('/api/stack_monitoring/collection', 'POST', {'enabled': enabled})
                 require(code == 200 and body['enabled'] == enabled, 'Collection toggle failed')
@@ -243,8 +253,6 @@ stackMonitoring.collection.resolvedRetentionDays: 17
                 for target in ['v1.1.0', 'v1.0.1']:
                     label = f'{installed} -> {target}, collection ' + ('enabled' if enabled else 'disabled')
                     print('Checking ' + label, flush=True)
-                    before = dash_api('/api/stack_monitoring/history')[1]['snapshot']['timestamp']
-                    before_count = len(documents())
                     if os.environ.get('PLAYWRIGHT_MODULE'):
                         browser_config = temporary / 'browser.json'
                         if browser_config.exists():
@@ -255,10 +263,16 @@ stackMonitoring.collection.resolvedRetentionDays: 17
                         browser = subprocess.Popen([os.environ.get('NODE_BINARY', 'node'), str(ROOT / 'scripts/check-release-upgrade-browser.cjs')],
                             env={**os.environ, 'UPGRADE_BROWSER_CONFIG': str(browser_config)}, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                         def browser_ready():
-                            require(browser.poll() is None, 'Browser could not warm the installed release')
+                            if browser.poll() is not None:
+                                _, stderr = browser.communicate()
+                                stage = next((line for line in stderr.splitlines() if line.startswith('FAIL: browser stage ')), 'details withheld')
+                                raise RuntimeError('Browser could not warm the installed release: ' + stage)
                             return ready.exists()
                         wait_for('cached browser baseline', browser_ready, 90)
                     docker('stop', '--time', '60', dashboards)
+                    require(os_api('/stack-monitoring-v2-*/_refresh', 'POST')[0] == 200, 'Stopped source history refresh failed')
+                    source_documents = documents()
+                    before = max(value['timestamp'] for value in source_documents.values())
                     docker('rm', dashboards)
                     start(target)
                     installed = target
@@ -266,14 +280,15 @@ stackMonitoring.collection.resolvedRetentionDays: 17
                         wait_for('fresh sample after image replacement', lambda: history(before), 120)
                     else:
                         time.sleep(12)
-                        require(len(documents()) == before_count, 'Disabled collection started after image replacement')
+                    assert_retained(source_documents, documents(), enabled)
                     preserved(enabled)
                     if browser:
                         stdout, stderr = browser.communicate(timeout=150)
                         require(browser.returncode == 0, 'Cached-browser reload failed: ' + next((line for line in stderr.splitlines() if line.startswith('FAIL: browser stage ')), 'details withheld'))
                         browser = None
                     checks.append(label)
-                    print('PASS: ' + label + '; retained history/insight, settings, identity, permissions and browser', flush=True)
+                    print('PASS: ' + label + '; retained history/insight, settings, identity and permissions'
+                          + ('; cached browser passed' if os.environ.get('PLAYWRIGHT_MODULE') else '; browser not requested'), flush=True)
             report = {'host': HOST, 'completed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                       'passed': checks, 'retained_documents': len(retained), 'browser_checked': bool(os.environ.get('PLAYWRIGHT_MODULE')),
                       'archives': {tag: hashlib.sha256(path.read_bytes()).hexdigest() for tag, path in archives.items()}}
