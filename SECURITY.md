@@ -1,6 +1,6 @@
 # Security
 
-Only the pinned OpenSearch Dashboards 3.9.0 integration is currently checked. There is no security support SLA or claim that the local Docker example is ready for an Internet-facing deployment.
+Checked host versions and required Security configuration are listed in the [compatibility matrix](docs/installation.md#compatibility). Each plugin ZIP targets one exact Dashboards version. There is no security support SLA or claim that the local Docker example is ready for an Internet-facing deployment.
 
 Report suspected vulnerabilities privately to the repository maintainer. Use the repository's **Security → Report a vulnerability** facility when available. If a private reporting channel is not configured, ask the maintainer to establish one before sharing exploit details. No dedicated security email address is currently published.
 

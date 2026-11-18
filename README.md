@@ -39,7 +39,7 @@ For a new local cluster, use [Try it locally](#try-it-locally). Install the ZIP 
 
 | Requirement | Setup |
 | --- | --- |
-| Host version | Download the ZIP matching the exact Dashboards version; see [compatibility](docs/installation.md#compatibility) |
+| Tested host pairs | OpenSearch + Dashboards **3.7.0, 3.8.0, 3.9.0, 3.10.0**, using matching versions; download the [exact-version ZIP](docs/installation.md#compatibility) |
 | Collection | One attached cluster, one collecting Dashboards instance |
 | OpenSearch plugins | Security and Index Management enabled; [3.7 demo mappings need an administrator adjustment](docs/installation.md#opensearch-37-demo-security-configuration) |
 | Setup identity | A signed-in Security administrator authorized to create monitoring resources, roles, and internal users |
@@ -48,7 +48,7 @@ For a new local cluster, use [Try it locally](#try-it-locally). Install the ZIP 
 
 ### 1. Download and verify
 
-Choose an available tag from [Releases](https://github.com/deveshk0/opensearch-stack-monitoring/releases). `v1.1.0` below is the new feature release example; use it only once published. Select your exact Dashboards version. Use a fresh directory and the same terminal for these commands. The matching checkout provides the Dockerfile and optional manual provisioner; installing a release does **not** require Node or a source build.
+Choose an available tag from [Releases](https://github.com/deveshk0/opensearch-stack-monitoring/releases). The commands below use `v1.1.0`. Select your exact Dashboards version. Use a fresh directory and the same terminal for these commands. The matching checkout provides the Dockerfile and optional manual provisioner; installing a release does **not** require Node or a source build.
 
 ```sh
 release_tag=v1.1.0 # Choose an available release.

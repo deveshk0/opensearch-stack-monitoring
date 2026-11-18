@@ -1,5 +1,7 @@
 # Verification and implementation decisions
 
+This page records historical implementation checks. For current host compatibility, test counts, and deployment limits, see the [compatibility matrix](installation.md#compatibility) and [readiness assessment](production-readiness.md).
+
 The implementation was checked in native OpenSearch Dashboards 3.9.0 on a three-node local OpenSearch cluster. Reference screenshots came from a running Kibana instance; this is an independent implementation of the observed workflows.
 
 - Unit suite: 46 passing tests for rates, resets/relocation, node contributors, normalization, time bounds, scoped history, partial search failures, collector lifecycle and deep links.

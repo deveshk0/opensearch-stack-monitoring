@@ -5,7 +5,7 @@ See LICENSE. This notice does not change the licenses of other software.
 
 Host-provided runtime dependencies
 
-OpenSearch Dashboards 3.9.0 supplies the core APIs, React, React DOM,
+The matching OpenSearch Dashboards host supplies the core APIs, React, React DOM,
 OpenSearch UI (OUI, imported through @elastic/eui), and Elastic Charts.
 The official plugin optimizer treats these browser libraries as host shared
 dependencies. Their package directories are not bundled in this plugin ZIP.
@@ -13,8 +13,10 @@ OpenSearch Dashboards and OUI have their own Apache-2.0 notices; React and
 React DOM have their own MIT notices. Retain the host distribution's licenses
 and notices when distributing that host.
 
-Elastic Charts is separately licensed. The installed @elastic/charts 71.8.1
-LICENSE.txt describes source covered by SSPL v1 / Elastic License 2.0,
+Elastic Charts is separately licensed. Dashboards 3.7.0 supplies
+@elastic/charts 31.1.0 with an Apache-2.0 LICENSE.txt. Dashboards 3.8.0,
+3.9.0 and 3.10.0 supply @elastic/charts 71.8.1; its LICENSE.txt describes
+source covered by SSPL v1 / Elastic License 2.0,
 Apache-2.0-compatible licenses, or solely Elastic License 2.0, according to
 the applicable file headers. This plugin's Apache-2.0 license does not
 relicense Elastic Charts. Refer to the host's @elastic/charts/LICENSE.txt,

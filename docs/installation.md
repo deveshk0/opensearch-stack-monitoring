@@ -8,14 +8,14 @@ The supported topology is one attached OpenSearch cluster and one collecting Das
 
 A plugin release number (for example, `v1.1.0`) is separate from its Dashboards host target. Each ZIP targets one **exact** host version; a 3.9.0 ZIP cannot be used as a general 3.x package.
 
-| Exact Dashboards build target | Release asset | New setup runtime validation |
+| Matching OpenSearch / Dashboards version | Release asset | Runtime validation |
 | --- | --- | --- |
-| 3.7.0 | `stack-monitoring-3.7.0.zip` | Pending in this development draft |
-| 3.8.0 | `stack-monitoring-3.8.0.zip` | Pending in this development draft |
-| 3.9.0 | `stack-monitoring-3.9.0.zip` | Pending in this development draft |
-| 3.10.0 | `stack-monitoring-3.10.0.zip` | Pending in this development draft |
+| 3.7.0 | `stack-monitoring-3.7.0.zip` | Passed with the Security mapping prerequisite below |
+| 3.8.0 | `stack-monitoring-3.8.0.zip` | Passed |
+| 3.9.0 | `stack-monitoring-3.9.0.zip` | Passed |
+| 3.10.0 | `stack-monitoring-3.10.0.zip` | Passed |
 
-These are the configured build targets, not a claim that all runtime checks have completed. Consult the selected release's validation notes before deployment. Other host versions are not covered. The generic `stack-monitoring.zip` is an alias of the **3.9.0** archive only.
+The [four-version CI run](https://github.com/deveshk0/opensearch-stack-monitoring/actions/runs/44321901005) passed exact-host builds, type checks, unit/UI tests, and fresh secured Docker checks: administrator setup through the browser, populated charts and stored history, denied-user isolation, scoped collector permissions, retention policy attachment, retry/idempotency, and collection after restart. Each release repeats these checks for its own commit. Each fixture pairs OpenSearch and Dashboards at the same version; mixed versions, other patch releases, and 2.x are not verified. The generic `stack-monitoring.zip` is an alias of the **3.9.0** archive only.
 
 ### OpenSearch 3.7 demo Security configuration
 
@@ -27,7 +27,7 @@ CI checks that the unmodified 3.7 demo mapping is rejected, then removes it **on
 
 ## Install a release
 
-Download the matching ZIP and `SHA256SUMS` from an available [GitHub release](https://github.com/deveshk0/opensearch-stack-monitoring/releases). The [README commands](../README.md#1-download-and-verify) use `release_tag=v1.1.0` as the new feature release example; select a published tag. Verify only the selected ZIP, because the checksum manifest contains all host builds:
+Download the matching ZIP and `SHA256SUMS` from an available [GitHub release](https://github.com/deveshk0/opensearch-stack-monitoring/releases). The [README commands](../README.md#1-download-and-verify) use `release_tag=v1.1.0`; select a published tag. Verify only the selected ZIP, because the checksum manifest contains all host builds:
 
 ```sh
 plugin_asset=stack-monitoring-3.9.0.zip # Match the exact Dashboards version.

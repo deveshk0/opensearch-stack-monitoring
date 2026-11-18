@@ -1,6 +1,6 @@
 # Production readiness assessment — 18 November 2026
 
-The plugin has been hardened and exercised on OpenSearch/OpenSearch Dashboards 3.9.0. Treat it as a release candidate for the documented single-collector deployment. This assessment does not certify arbitrary cluster sizes, host versions, security configurations, or availability requirements.
+The plugin has been built and exercised on matching OpenSearch/OpenSearch Dashboards 3.7.0, 3.8.0, 3.9.0, and 3.10.0, with the [documented 3.7 Security mapping prerequisite](installation.md#opensearch-37-demo-security-configuration). The broader three-node and failure-recovery checks below were performed on 3.9.0. Treat it as a release candidate for the documented single-collector deployment. This assessment does not certify arbitrary cluster sizes, host versions, security configurations, or availability requirements.
 
 ## Changes verified in this pass
 
@@ -16,9 +16,10 @@ The plugin has been hardened and exercised on OpenSearch/OpenSearch Dashboards 3
 
 | Check | Result |
 | --- | --- |
-| JavaScript/TypeScript regression suite | 96 passing tests on macOS and the official Linux container runtime |
-| Provisioning and secure-client tests | 17 passing tests |
-| Official host TypeScript check and plugin build | Passed against pinned Dashboards 3.9.0; ZIP manifest, LICENSE and NOTICE validated |
+| JavaScript/TypeScript regression suite | 140 passing tests, including isolated UI and setup lifecycle tests, against each pinned host |
+| Provisioning, secure-client, release and toolchain tests | 38 passing Python tests |
+| Official host TypeScript check and plugin build | Passed for all four exact host targets; ZIP manifest, LICENSE and NOTICE validated |
+| Fresh secured single-node fixtures | All four versions passed browser setup, chart/table rendering, stored samples, denied setup, scoped credentials, private file permissions, ISM attachment, idempotency and restart; 3.7 also proved wildcard-role rejection before fixture-only correction |
 | Local three-node live APIs | Passed health, real rates, entity history, invalid query handling, reader/denied authorization and collector isolation |
 | Self-monitoring | Passed enable/disable, stopped sampling, persisted setting across restart and resumed indexing |
 | Insights lifecycle | Passed sustained detection, evidence UI, same incident after restart, sustained recovery, mobile view and chart navigation |
@@ -34,7 +35,7 @@ The synthetic processing check (`node scripts/benchmark-monitoring.cjs`, after `
 
 ## Remaining deployment limits
 
-- Only OpenSearch Dashboards 3.9.0 has been validated. A [clean Linux bootstrap, test, build, and type-check run](https://github.com/deveshk0/opensearch-stack-monitoring/actions/runs/44307253246) passed on GitHub for commit `382b7f4`. Each automated release requires those checks again for its own revision. That historical run did not start a live cluster. The new compatibility workflow adds fresh secured Docker and browser checks; consult the current run and README matrix for its results.
+- The [four-version Linux compatibility run](https://github.com/deveshk0/opensearch-stack-monitoring/actions/runs/44321901005) passed for commit `1d08f74`. Every release requires the same build, test and live checks for its own revision. Other patch versions, mixed OpenSearch/Dashboards versions, and 2.x remain unverified. Fresh CI fixtures use demo certificates on isolated networks; they do not validate your production TLS or identity provider.
 - The supplied local Compose deployment uses demo certificates and HTTP browser access. Use verified TLS, protected credentials, appropriate backups and your deployment's access controls in production.
 - Only one collector is supported. Persist its unique Dashboards UUID; never clone that data directory into another active collector. A lost owner may require manual recovery after the old process is stopped.
 - Self-monitoring cannot independently report a total outage of its own cluster or Dashboards process. Rates are sampled estimates; endpoint response-time variation can affect them.
@@ -60,4 +61,4 @@ The storage test rolls the real monitoring alias once, preserving its history, t
 
 The final extended local run exposed an OpenSearch node OOM at the original 1 GiB container limit; the other two nodes were also near that cap. The demo node limit was raised to 1.5 GiB with its existing 512 MiB JVM heap, and automatic restart was enabled. This is a local resource correction, not production capacity sizing. Rolling recovery was verified: all three nodes returned to green health, retained history and resumed fresh collection without errors.
 
-Final deployed artifact SHA-256: `02f6c61b5510d46fa5d432afbe361689d90eeed922f994ef367a27c6a680aeac`. The running asset build identity was checked against this archive.
+Release archive hashes are published in `SHA256SUMS` alongside the [versioned release downloads](https://github.com/deveshk0/opensearch-stack-monitoring/releases). Verify the selected exact-host ZIP before installation.
