@@ -17,7 +17,7 @@ The plugin has been built and exercised on matching OpenSearch/OpenSearch Dashbo
 | Check | Result |
 | --- | --- |
 | JavaScript/TypeScript regression suite | 140 passing tests, including isolated UI and setup lifecycle tests, against each pinned host |
-| Provisioning, secure-client, release and toolchain tests | 38 passing Python tests |
+| Provisioning, secure-client, release, upgrade-fixture and toolchain tests | 50 passing Python tests |
 | Official host TypeScript check and plugin build | Passed for all four exact host targets; ZIP manifest, LICENSE and NOTICE validated |
 | Fresh secured single-node fixtures | All four versions passed browser setup, chart/table rendering, stored samples, denied setup, scoped credentials, private file permissions, ISM attachment, idempotency and restart; 3.7 also proved wildcard-role rejection before fixture-only correction |
 | Local three-node live APIs | Passed health, real rates, entity history, invalid query handling, reader/denied authorization and collector isolation |
@@ -26,6 +26,7 @@ The plugin has been built and exercised on matching OpenSearch/OpenSearch Dashbo
 | Failure recovery | Passed automatic recovery after settings-access failure; Insights-access failure left metrics running and recovered after permissions returned |
 | Installed ownership and cleanup | Passed competing-owner rejection and old-resolved deletion while preserving active, recent and other-cluster fixtures |
 | Retained history upgrade | Passed a real v1 processor sample through the final installed API |
+| Published plugin upgrade and rollback | [Passed v1.0.1 → v1.1.0 → v1.0.1](https://github.com/deveshk0/opensearch-stack-monitoring/actions/runs/44329626905) on Docker / host 3.9.0, separately with collection disabled and enabled; retained source-version samples, historical APIs, insight/application data, custom retention/templates/alias, manual credentials, permissions, UUID and cached-browser reloads verified |
 | Manual alias rollover | Passed inherited settings, continued writes to the new generation, and retained old history |
 | Automatic ISM rollover/deletion | Passed automatic rollover and deletion on the normal scheduler using an isolated policy; current write generation preserved and fixtures removed |
 | Browser navigation | Passed overview, nodes, indices, pipelines, processors, Dashboards and instances |

@@ -241,6 +241,8 @@ sudo systemctl start opensearch-dashboards
 
 Tarball owners omit `sudo` and `--allow-root`; Docker deployments rebuild and replace the image. Preserve `path.data` so the stored collector and instance UUID survive. Confirm the installed version, fresh samples, and current browser assets after an upgrade. Invalidate stale proxy/browser assets if necessary.
 
+See the [release upgrade and rollback checks](docs/installation.md#release-upgrade-and-rollback-checks) for the tested Docker path and the manual-credential requirement when returning to v1.0.1.
+
 To uninstall, disable self-monitoring, stop the collecting instance, and remove the plugin or deploy an image without it. Remove any `stackMonitoring.*` configuration before restarting. Plugin removal leaves monitoring indices and the saved collector credential file in place; retire that account and securely remove its secret when no longer needed. Existing ISM policies can still expire metrics, while plugin-driven incident cleanup stops.
 
 ### Installation troubleshooting

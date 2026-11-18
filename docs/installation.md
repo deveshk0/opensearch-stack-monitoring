@@ -119,6 +119,28 @@ On every other Dashboards instance connected to the same cluster, set `stackMoni
 
 Restart Dashboards after providing manual credentials. Collection also requires the persisted self-monitoring setting. The UI control beside the date picker changes that setting with the signed-in user's permissions. Disabling preserves retained history. Settings that cannot be read do not silently enable collection.
 
+## Release upgrade and rollback checks
+
+The [verified CI run](https://github.com/deveshk0/opensearch-stack-monitoring/actions/runs/44329626905) passed all four upgrade/rollback scenarios, cached-browser checks, and fixture cleanup on 18 November 2026.
+
+The repeatable [published-release workflow](https://github.com/deveshk0/opensearch-stack-monitoring/actions/workflows/upgrade.yml) targets **v1.0.1 → v1.1.0 → v1.0.1** on an unchanged OpenSearch/Dashboards **3.9.0** host. It replaces Docker images while retaining both data volumes and the existing manual collector configuration. It runs separately with collection disabled and enabled.
+
+The checks compare retained monitoring documents, fixed-range cluster/node history, a retained insight, application data, custom 11-day retention, templates, write alias, saved collection state, collector authentication and permissions, and the Dashboards UUID. Each replacement must preserve every sample present when its source container stops. With collection enabled, the target must write a newer sample. A browser with cached assets must load the replacement plugin and render retained chart data.
+
+For a local reproduction, use a dedicated Docker host with capacity for a 1.5 GiB OpenSearch container, a 768 MiB Dashboards container, Chrome, and overhead. Python, Node, Docker, and Google Chrome are required:
+
+```sh
+git fetch origin tag v1.0.1
+python3 scripts/check-release-upgrade.py --check # Downloads and validates the two public ZIPs only.
+npm install --prefix .cache/browser-tests --no-save playwright@1.65.0
+PLAYWRIGHT_MODULE="$PWD/.cache/browser-tests/node_modules/playwright" \
+  python3 scripts/check-release-upgrade.py
+```
+
+The live command creates a fresh secured single-node fixture with generated credentials. It verifies cleanup of its named containers, network, volumes, and images, and writes `.cache/release-upgrade-results.json` on a successful run. The original `check-upgrade.py` script checks legacy v1 history readability; it does not perform release replacement.
+
+Rollback to v1.0.1 requires its original **manual collector credentials** and the preserved data directory. That release cannot load v1.1.0's automatically generated credential file. A fresh automatic installation must be deliberately configured for the older manual credential model before a downgrade. This test does not cover changing OpenSearch/Dashboards versions, package-manager installations, forced process termination, or long-running production workloads.
+
 ## Ownership and recovery
 
 Collection uses a cluster-scoped document in `.stack-monitoring-locks-v1`, owned by the Dashboards instance UUID. A different instance cannot collect while another owner holds the document. The same persisted UUID can reclaim ownership after restart. This prevents accidental competing collectors; it is not automatic failover and it cannot distinguish two cloned processes using the same UUID.

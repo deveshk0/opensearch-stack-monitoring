@@ -318,8 +318,6 @@ stackMonitoring.collection.resolvedRetentionDays: 17
             report = {'host': HOST, 'completed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                       'passed': checks, 'retained_documents': len(retained), 'browser_checked': bool(os.environ.get('PLAYWRIGHT_MODULE')),
                       'archives': {tag: hashlib.sha256(path.read_bytes()).hexdigest() for tag, path in archives.items()}}
-            (ROOT / '.cache/release-upgrade-results.json').write_text(json.dumps(report, indent=2) + '\n')
-            print('PASS: published release upgrade and rollback verification complete', flush=True)
         finally:
             if browser and browser.poll() is None:
                 browser.terminate()
@@ -330,6 +328,8 @@ stackMonitoring.collection.resolvedRetentionDays: 17
                     browser.wait()
             cleanup_fixture([dashboards, node], prefix, volumes, list(images.values()))
             print('PASS: disposable containers, network, volumes and images removed', flush=True)
+        (ROOT / '.cache/release-upgrade-results.json').write_text(json.dumps(report, indent=2) + '\n')
+        print('PASS: published release upgrade and rollback verification complete', flush=True)
 
 
 if __name__ == '__main__':
